@@ -14,7 +14,6 @@ def update_primary_manufacturer_part(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0005_auto_20181007_1934'),
     ]
@@ -35,7 +34,8 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='part',
             name='primary_manufacturer_part',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='primary_manufacturer_part', to='bom.ManufacturerPart'),
+            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='primary_manufacturer_part', to='bom.ManufacturerPart'),
         ),
         migrations.RunPython(update_primary_manufacturer_part),
     ]

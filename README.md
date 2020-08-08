@@ -1,5 +1,6 @@
+Customized django-bom implementation for FixturFab internal use.
+
 # BOM
-![](https://github.com/mpkasp/django-bom/workflows/Django%20CI/badge.svg)
 
 BOM is a simple Django app to manage a bill of materials. It supports multiple part numbering schemes, tracking component sourcing information, estimates costs, and contains smart integrations with Mouser to pull in the latest component pricing and Google Drive for part file management. BOM is written in Python 3 and Django 3.
 

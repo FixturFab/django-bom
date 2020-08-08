@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0032_auto_20200126_1806'),
     ]
@@ -14,16 +13,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organization',
             name='number_scheme',
-            field=models.CharField(choices=[('I', 'Intelligent'), ('S', 'Semi-Intelligent')], default='S', max_length=1),
+            field=models.CharField(choices=[('I', 'Intelligent'), ('S', 'Semi-Intelligent')], default='S',
+                                   max_length=1),
         ),
         migrations.AlterField(
             model_name='organization',
             name='number_item_len',
-            field=models.PositiveIntegerField(default=3, validators=[django.core.validators.MinValueValidator(3), django.core.validators.MaxValueValidator(128)]),
+            field=models.PositiveIntegerField(default=3, validators=[django.core.validators.MinValueValidator(3),
+                                                                     django.core.validators.MaxValueValidator(128)]),
         ),
         migrations.AlterField(
             model_name='part',
             name='number_item',
-            field=models.CharField(blank=True, default=None, max_length=128, validators=[django.core.validators.RegexValidator('^[0-9]*$', 'Only numeric characters are allowed.')]),
+            field=models.CharField(blank=True, default=None, max_length=128, validators=[
+                django.core.validators.RegexValidator('^[0-9]*$', 'Only numeric characters are allowed.')]),
         ),
     ]

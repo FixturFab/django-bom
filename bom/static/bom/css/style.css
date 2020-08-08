@@ -1,42 +1,42 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto');
 
 html {
-    line-height: normal;
+  line-height: normal;
 }
 
 main {
-    min-height: 100vh;
+  min-height: 100vh;
 }
 
 h1 {
-    font-size: 3.3rem;
+  font-size: 3.3rem;
 }
 
 h2 {
-    font-size: 2.8rem;
+  font-size: 2.8rem;
 }
 
 h3 {
-    font-size: 2.2rem;
+  font-size: 2.2rem;
 }
 
 h4 {
-    font-size: 1.8rem;
+  font-size: 1.8rem;
 }
 
 h5 {
-    font-size: 1.3rem;
+  font-size: 1.3rem;
 }
 
-.tabs { 
-    /* Materialize has a bug that shows the scrollbar sometimes, this prevents it */
-    /*overflow-x: hidden;*/
+.tabs {
+  /* Materialize has a bug that shows the scrollbar sometimes, this prevents it */
+  /*overflow-x: hidden;*/
 }
 
 td, tr {
-    padding-right: 1px;
-    padding-left: 1px;
-    min-width: 40px;
+  padding-right: 1px;
+  padding-left: 1px;
+  min-width: 40px;
 }
 
 /*.help-block {*/
@@ -44,164 +44,167 @@ td, tr {
 /*}*/
 
 .tight td {
-    padding: 3px 3px;
+  padding: 3px 3px;
 }
 
 .tighter {
-    padding: 1px 1px;
+  padding: 1px 1px;
 }
 
 .text-small {
-    font-size: .75em;
+  font-size: .75em;
 }
 
 .text-normal {
-    font-size: 1em;
+  font-size: 1em;
 }
 
 .text-right {
-    text-align: right;
+  text-align: right;
 }
 
 .text-center {
-    text-align: center;
+  text-align: center;
 }
 
 .info {
-    color: red;
+  color: red;
 }
 
 .single-line {
-    white-space: nowrap;
+  white-space: nowrap;
 }
 
 .responsive-table-wrapper {
-    overflow-x: auto;
-    padding-bottom: 16px;
-    /*min-width: 100%;
-    max-width: 110%;
-    margin: 0 -5%;*/
+  overflow-x: auto;
+  padding-bottom: 16px;
+  /*min-width: 100%;
+  max-width: 110%;
+  margin: 0 -5%;*/
 }
 
 .autocomplete-content {
-    opacity: .8;
-    position: absolute;
-    width: 100%;
+  opacity: .8;
+  position: absolute;
+  width: 100%;
 }
 
 .hidden {
-    display: none;
+  display: none;
 }
 
 .cell-collapsed {
-    /* background: grey; */
-    background-color: #f2f2f2;
+  /* background: grey; */
+  background-color: #f2f2f2;
 }
 
 .page-footer {
-    margin-top: 50px;
+  margin-top: 50px;
 }
 
-.tabs .tab a{
-    /*@extend .green .lighten-3;*/
-    color:#a5d6a7;
+.tabs .tab a {
+  /*@extend .cyan .lighten-3;*/
+  color: #80deea;
 }
-.tabs .tab a:hover,.tabs .tab a.active {
-    background-color:transparent;
-    color:#66bb6a;
+
+.tabs .tab a:hover, .tabs .tab a.active {
+  background-color: transparent;
+  color: #006064;
 }
-.tabs .tab.disabled a,.tabs .tab.disabled a:hover {
-    color:rgba(165,214,167,0.5);    
+
+.tabs .tab.disabled a, .tabs .tab.disabled a:hover {
+  color: rgba(0, 174, 181, 0.5);
 }
+
 .tabs .indicator {
-    background-color:#66bb6a;
+  background-color: #006064;
 }
 
 .tabs .tab a:focus, .tabs .tab a:focus.active {
-    background-color:transparent;
+  background-color: transparent;
 }
 
 /* Alerts */
 .alert {
-    padding: 5px;
-    background-color: #dcedc8; /* light green lighten-4 */
-    margin: 5px;
-    border: solid #aed581 1px; /* light green lighten-2 */
-    border-radius: 10px;
+  padding: 5px;
+  background-color: #b2ebf2; /* light cyan lighten-4 */
+  margin: 5px;
+  border: solid #4dd0e1 1px; /* light cyan lighten-2 */
+  border-radius: 10px;
 }
 
 .alert-error {
-    color: white;
-    background-color: #f44336; /* red */
-    border: solid #e57373 1px; /* red lighten-2 */
+  color: white;
+  background-color: #f44336; /* red */
+  border: solid #e57373 1px; /* red lighten-2 */
 }
 
 .alert-warning {
-    background-color: #f0f4c3; /* lime lighten-4 */
-    border: solid #dce775 1px; /* lime lighten-2 */
+  background-color: #b2dfdb; /* cyan lighten-4 */
+  border: solid #4db6ac 1px; /* cyan lighten-2 */
 }
 
 .messages.tags {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 /* Override treetable icon */
 table.treetable tr.collapsed span.indenter a {
-    background-image: url('img/_ionicons_svg_md-arrow-dropright.svg');
+  background-image: url('img/_ionicons_svg_md-arrow-dropright.svg');
 }
 
 table.treetable tr.expanded span.indenter a {
-    background-image: url('img/_ionicons_svg_md-arrow-dropdown.svg');
+  background-image: url('img/_ionicons_svg_md-arrow-dropdown.svg');
 }
 
 /* Override Materialize container */
 .container-app {
-    margin: 0 auto;
-    max-width: none;
-    width: 95%;
+  margin: 0 auto;
+  max-width: none;
+  width: 95%;
 }
 
 @media only screen and (min-width: 601px) {
-    .container-app {
-        width: 95%;
-    }
+  .container-app {
+    width: 95%;
+  }
 }
 
 @media only screen and (min-width: 993px) {
-    .container-app {
-        width: 90%;
-    }
+  .container-app {
+    width: 90%;
+  }
 }
 
 .primary-color {
-    color: #66bb6a;
+  color: #006064;
 }
 
 .dark-color {
-    color: #338a3e;
+  color: #004d40;
 }
 
 .light-color {
-    color: #98ee99;
+  color: #0097a7;
 }
 
 .btn-icon-round {
-    border-radius: 50%;
-    padding: 0 8px;
+  border-radius: 50%;
+  padding: 0 8px;
 }
 
 a.anchor {
-    display: block;
-    position: relative;
-    top: -64px;
-    visibility: hidden;
+  display: block;
+  position: relative;
+  top: -64px;
+  visibility: hidden;
 }
 
 /* Specific Styling */
 .part-info-form input {
-    text-align: right;
+  text-align: right;
 }
 
 .materialize-checkbox-padding div {
-    padding: 14.5px 0;
+  padding: 14.5px 0;
 }

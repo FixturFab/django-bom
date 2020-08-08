@@ -5,7 +5,8 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django.views import View
 
-from bom.models import Part, PartClass, Subpart, SellerPart, Organization, Manufacturer, ManufacturerPart, User, UserMeta, PartRevision, Assembly, AssemblySubparts
+from bom.models import Part, PartClass, Subpart, SellerPart, Organization, Manufacturer, ManufacturerPart, UserMeta, \
+    PartRevision, Assembly, AssemblySubparts
 from bom.third_party_apis.mouser import Mouser
 from bom.third_party_apis.base_api import BaseApiError
 
@@ -17,7 +18,8 @@ class BomJsonResponse(View):
 @method_decorator(login_required, name='dispatch')
 class MouserPartMatchBOM(BomJsonResponse):
     def get(self, request, part_revision_id):
-        part_revision = get_object_or_404(PartRevision, pk=part_revision_id)  # get all of the pricing for manufacturer parts, marked with mouser in this part
+        part_revision = get_object_or_404(PartRevision,
+                                          pk=part_revision_id)  # get all of the pricing for manufacturer parts, marked with mouser in this part
         user = request.user
         profile = user.bom_profile()
         organization = profile.organization
@@ -38,7 +40,8 @@ class MouserPartMatchBOM(BomJsonResponse):
             bom_part_quantity = bom_part.total_extended_quantity
 
             try:
-                part_seller_info = mouser.search_and_match(mp, quantity=bom_part_quantity, currency=organization.currency)
+                part_seller_info = mouser.search_and_match(mp, quantity=bom_part_quantity,
+                                                           currency=organization.currency)
             except BaseApiError as err:
                 self.response['errors'].append(err)
                 continue

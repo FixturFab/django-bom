@@ -13,7 +13,6 @@ bom/decorators.py
 bom/form_fields.py
 bom/forms.py
 bom/helpers.py
-bom/local_settings.py
 bom/models.py
 bom/part_bom.py
 bom/settings.py
@@ -61,14 +60,11 @@ bom/migrations/0036_auto_20200303_0538.py
 bom/migrations/0037_auto_20200405_1642.py
 bom/migrations/0038_auto_20200422_0504.py
 bom/migrations/__init__.py
-bom/static/.DS_Store
-bom/static/bom/.DS_Store
 bom/static/bom/css/jquery.treetable.css
 bom/static/bom/css/materialize.min.css
 bom/static/bom/css/style.css
 bom/static/bom/css/tablesorter-theme.materialize.css
 bom/static/bom/css/treetable-theme.css
-bom/static/bom/img/.DS_Store
 bom/static/bom/img/_ionicons_svg_md-arrow-dropdown.svg
 bom/static/bom/img/_ionicons_svg_md-arrow-dropright.svg
 bom/static/bom/img/favicon.ico

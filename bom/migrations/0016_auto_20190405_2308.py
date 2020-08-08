@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def update_parts_to_part_history(apps, schema_editor):
     Part = apps.get_model('bom', 'Part')
     PartChangeHistory = apps.get_model('bom', 'PartChangeHistory')
@@ -27,8 +28,8 @@ def update_parts_to_part_history(apps, schema_editor):
         sp.part_revision = pch
         sp.save()
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     dependencies = [
         ('bom', '0015_auto_20190303_1915'),
     ]

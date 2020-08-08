@@ -10,16 +10,19 @@ def update_sellerpart_fk(apps, schema_editor):
     ManufacturerPart = apps.get_model('bom', 'ManufacturerPart')
 
     for sp in SellerPart.objects.all():
-        (mp, created) = ManufacturerPart.objects.get_or_create(part=sp.part, manufacturer_part_number=sp.part.manufacturer_part_number, manufacturer=sp.part.manufacturer)
+        (mp, created) = ManufacturerPart.objects.get_or_create(part=sp.part,
+                                                               manufacturer_part_number=sp.part.manufacturer_part_number,
+                                                               manufacturer=sp.part.manufacturer)
         sp.manufacturer_part = mp
         sp.save()
 
     for p in Part.objects.all():
-        (mp, created) = ManufacturerPart.objects.get_or_create(part=p, manufacturer_part_number=p.manufacturer_part_number, manufacturer=p.manufacturer)
+        (mp, created) = ManufacturerPart.objects.get_or_create(part=p,
+                                                               manufacturer_part_number=p.manufacturer_part_number,
+                                                               manufacturer=p.manufacturer)
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0004_auto_20180911_0011'),
     ]
@@ -30,14 +33,17 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('manufacturer_part_number', models.CharField(blank=True, default='', max_length=128)),
-                ('manufacturer', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='bom.Manufacturer')),
+                ('manufacturer',
+                 models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT,
+                                   to='bom.Manufacturer')),
                 ('part', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='bom.Part')),
             ],
         ),
         migrations.AddField(
             model_name='sellerpart',
             name='manufacturer_part',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE, to='bom.ManufacturerPart'),
+            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    to='bom.ManufacturerPart'),
         ),
         migrations.RunPython(update_sellerpart_fk),
         migrations.AlterField(

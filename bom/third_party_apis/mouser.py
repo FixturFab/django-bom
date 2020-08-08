@@ -10,7 +10,7 @@ import json
 class MouserApi(BaseApi):
     def __init__(self, *args, **kwargs):
         api_settings_key = 'mouser_api_key'
-        root_url='https://api.mouser.com/api/v1'
+        root_url = 'https://api.mouser.com/api/v1'
         api_key_query = 'apiKey'
         super().__init__(api_settings_key, root_url, api_key_query=api_key_query)
 
@@ -75,7 +75,8 @@ class Mouser:
             #  to reduce results
             mfg_id = manufacturer_list[manufacturer.name] if manufacturer.name in manufacturer_list else None
             if mfg_id:
-                results = self.api.search_part_and_manufacturer(part_number=manufacturer_part_number, manufacturer_id=mfg_id)
+                results = self.api.search_part_and_manufacturer(part_number=manufacturer_part_number,
+                                                                manufacturer_id=mfg_id)
             else:
                 results = self.api.search_part(part_number=manufacturer_part_number)
         else:
@@ -100,7 +101,8 @@ class Mouser:
                     'product_detail_url': part['ProductDetailUrl'],
                 }
 
-                lead_time_days = [int(s) for s in part['LeadTime'].split() if s.isdigit()][0]  # TODO: Make sure it's actually days
+                lead_time_days = [int(s) for s in part['LeadTime'].split() if s.isdigit()][
+                    0]  # TODO: Make sure it's actually days
                 for pb in part['PriceBreaks']:
                     moq = int(pb['Quantity'])
                     unit_price_raw = parse_number(pb['Price'])

@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0028_partrevision_displayable_synopsis'),
     ]
@@ -13,11 +12,15 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='partrevision',
             name='current_rating_units',
-            field=models.CharField(blank=True, choices=[('', '-----'), ('A', 'A'), ('uA', 'μV'), ('mA', 'mA'), ('kA', 'kA'), ('MA', 'MA'), ('Other', 'Other')], default=None, max_length=5, null=True),
+            field=models.CharField(blank=True,
+                                   choices=[('', '-----'), ('A', 'A'), ('uA', 'μV'), ('mA', 'mA'), ('kA', 'kA'),
+                                            ('MA', 'MA'), ('Other', 'Other')], default=None, max_length=5, null=True),
         ),
         migrations.AlterField(
             model_name='partrevision',
             name='voltage_rating_units',
-            field=models.CharField(blank=True, choices=[('', '-----'), ('V', 'V'), ('uV', 'μV'), ('mV', 'mV'), ('kV', 'kV'), ('MV', 'MV'), ('Other', 'Other')], default=None, max_length=5, null=True),
+            field=models.CharField(blank=True,
+                                   choices=[('', '-----'), ('V', 'V'), ('uV', 'μV'), ('mV', 'mV'), ('kV', 'kV'),
+                                            ('MV', 'MV'), ('Other', 'Other')], default=None, max_length=5, null=True),
         ),
     ]

@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -38,12 +37,17 @@ class Migration(migrations.Migration):
             name='Part',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('number_item', models.CharField(blank=True, default=None, max_length=4, validators=[django.core.validators.RegexValidator('^[0-9]*$', 'Only numeric characters are allowed.')])),
-                ('number_variation', models.CharField(blank=True, default=None, max_length=2, validators=[django.core.validators.RegexValidator('^[0-9a-zA-Z]*$', 'Only alphanumeric characters are allowed.')])),
+                ('number_item', models.CharField(blank=True, default=None, max_length=4, validators=[
+                    django.core.validators.RegexValidator('^[0-9]*$', 'Only numeric characters are allowed.')])),
+                ('number_variation', models.CharField(blank=True, default=None, max_length=2, validators=[
+                    django.core.validators.RegexValidator('^[0-9a-zA-Z]*$',
+                                                          'Only alphanumeric characters are allowed.')])),
                 ('description', models.CharField(default=None, max_length=255)),
                 ('revision', models.CharField(max_length=2)),
                 ('manufacturer_part_number', models.CharField(blank=True, default='', max_length=128)),
-                ('manufacturer', models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT, to='bom.Manufacturer')),
+                ('manufacturer',
+                 models.ForeignKey(blank=True, default=None, null=True, on_delete=django.db.models.deletion.PROTECT,
+                                   to='bom.Manufacturer')),
             ],
         ),
         migrations.CreateModel(
@@ -91,8 +95,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('count', models.IntegerField(default=1)),
-                ('assembly_part', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='assembly_part', to='bom.Part')),
-                ('assembly_subpart', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='assembly_subpart', to='bom.Part')),
+                ('assembly_part',
+                 models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='assembly_part',
+                                   to='bom.Part')),
+                ('assembly_subpart', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT,
+                                                       related_name='assembly_subpart', to='bom.Part')),
             ],
         ),
         migrations.CreateModel(
@@ -100,14 +107,17 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('role', models.CharField(choices=[('A', 'Admin'), ('V', 'Viewer')], max_length=1)),
-                ('organization', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='bom.Organization')),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                ('organization', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT,
+                                                   to='bom.Organization')),
+                (
+                'user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
             ],
         ),
         migrations.AddField(
             model_name='part',
             name='number_class',
-            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.PROTECT, related_name='number_class', to='bom.PartClass'),
+            field=models.ForeignKey(default=None, on_delete=django.db.models.deletion.PROTECT,
+                                    related_name='number_class', to='bom.PartClass'),
         ),
         migrations.AddField(
             model_name='part',

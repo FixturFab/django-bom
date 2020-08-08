@@ -5,8 +5,10 @@ from unittest import skip
 
 from re import finditer, search
 
-from .helpers import create_some_fake_parts, create_a_fake_organization, create_a_fake_part_revision, create_user_and_organization, \
-    create_a_fake_subpart, create_some_fake_part_classes, create_some_fake_manufacturers, create_some_fake_sellers, create_a_fake_assembly
+from .helpers import create_some_fake_parts, create_a_fake_organization, create_a_fake_part_revision, \
+    create_user_and_organization, \
+    create_a_fake_subpart, create_some_fake_part_classes, create_some_fake_manufacturers, create_some_fake_sellers, \
+    create_a_fake_assembly
 from .models import Part, SellerPart, ManufacturerPart, Seller, PartClass, Subpart
 from .forms import PartInfoForm, PartFormSemiIntelligent, AddSubpartForm, SellerPartForm
 
@@ -78,7 +80,7 @@ class TestBOM(TransactionTestCase):
 
         # Make sure only one part shows up
         decoded_content = response.content.decode('utf-8')
-        main_content = decoded_content[decoded_content.find('<main>')+len('<main>'):decoded_content.rfind('</main>')]
+        main_content = decoded_content[decoded_content.find('<main>') + len('<main>'):decoded_content.rfind('</main>')]
         occurances = [m.start() for m in finditer(p1.full_part_number(), main_content)]
         self.assertEqual(len(occurances), 1)
 
@@ -137,28 +139,34 @@ class TestBOM(TransactionTestCase):
         response = self.client.post(reverse('bom:part-export-bom-sourcing-detailed', kwargs={'part_id': p1.id}))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse('bom:part-revision-export-bom-sourcing', kwargs={'part_revision_id': p3.latest().id}))
+        response = self.client.post(
+            reverse('bom:part-revision-export-bom-sourcing', kwargs={'part_revision_id': p3.latest().id}))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse('bom:part-revision-export-bom-sourcing-detailed', kwargs={'part_revision_id': p3.latest().id}))
+        response = self.client.post(
+            reverse('bom:part-revision-export-bom-sourcing-detailed', kwargs={'part_revision_id': p3.latest().id}))
         self.assertEqual(response.status_code, 200)
 
     def test_part_revision_export_bom(self):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
 
-        response = self.client.post(reverse('bom:part-revision-export-bom', kwargs={'part_revision_id': p1.latest().id}))
+        response = self.client.post(
+            reverse('bom:part-revision-export-bom', kwargs={'part_revision_id': p1.latest().id}))
         self.assertEqual(response.status_code, 200)
 
     def test_part_revision_export_bom_flat(self):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
 
-        response = self.client.post(reverse('bom:part-revision-export-bom-flat', kwargs={'part_revision_id': p1.latest().id}))
+        response = self.client.post(
+            reverse('bom:part-revision-export-bom-flat', kwargs={'part_revision_id': p1.latest().id}))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse('bom:part-revision-export-bom-flat-sourcing', kwargs={'part_revision_id': p1.latest().id}))
+        response = self.client.post(
+            reverse('bom:part-revision-export-bom-flat-sourcing', kwargs={'part_revision_id': p1.latest().id}))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse('bom:part-revision-export-bom-flat-sourcing-detailed', kwargs={'part_revision_id': p1.latest().id}))
+        response = self.client.post(
+            reverse('bom:part-revision-export-bom-flat-sourcing-detailed', kwargs={'part_revision_id': p1.latest().id}))
         self.assertEqual(response.status_code, 200)
 
     def test_export_parts(self):
@@ -172,12 +180,14 @@ class TestBOM(TransactionTestCase):
 
         test_file = 'test_bom.csv' if self.organization.number_variation_len > 0 else 'test_bom_6_no_variations.csv'
         with open(f'bom/test_files/{test_file}') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
         for msg in messages:
-            self.assertEqual(msg.tags, "error")  # Error loading 200-3333-00 via CSV because already in parent's BOM and has empty ref designators
+            self.assertEqual(msg.tags,
+                             "error")  # Error loading 200-3333-00 via CSV because already in parent's BOM and has empty ref designators
 
         subparts = p2.latest().assembly.subparts.all()
 
@@ -196,9 +206,9 @@ class TestBOM(TransactionTestCase):
         self.assertEqual(subparts[2].count, 2)
         self.assertEqual(subparts[2].do_not_load, True)
 
-
         with open('bom/test_files/test_bom_2.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -209,7 +219,8 @@ class TestBOM(TransactionTestCase):
     def test_part_upload_bom_corner_cases(self):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
         with open('bom/test_files/test_bom_3_recursion.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -218,7 +229,8 @@ class TestBOM(TransactionTestCase):
             self.assertTrue("recursion" in str(msg.message))
 
         with open('bom/test_files/test_bom_4_no_part_rev.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -251,7 +263,8 @@ class TestBOM(TransactionTestCase):
         # Test edit
         part_class_form_data['name'] = 'edited test part name'
 
-        response = self.client.post(reverse('bom:part-class-edit', kwargs={'part_class_id': part_class.id}), part_class_form_data)
+        response = self.client.post(reverse('bom:part-class-edit', kwargs={'part_class_id': part_class.id}),
+                                    part_class_form_data)
         self.assertEqual(response.status_code, 302)
 
         part_class = PartClass.objects.get(id=part_class.id)
@@ -365,7 +378,7 @@ class TestBOM(TransactionTestCase):
         response = self.client.get(reverse('bom:home'))
         self.assertEqual(response.status_code, 200)
         decoded_content = response.content.decode('utf-8')
-        main_content = decoded_content[decoded_content.find('<main>')+len('<main>'):decoded_content.rfind('</main>')]
+        main_content = decoded_content[decoded_content.find('<main>') + len('<main>'):decoded_content.rfind('</main>')]
 
         occurances = [m.start() for m in finditer(p1.full_part_number(), main_content)]
         self.assertEqual(len(occurances), 1)
@@ -450,12 +463,14 @@ class TestBOM(TransactionTestCase):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
 
         # Submit with no form data
-        response = self.client.post(reverse('bom:part-add-subpart', kwargs={'part_id': p1.id, 'part_revision_id': p1.latest().id, }))
+        response = self.client.post(
+            reverse('bom:part-add-subpart', kwargs={'part_id': p1.id, 'part_revision_id': p1.latest().id, }))
         self.assertEqual(response.status_code, 302)
 
         # Test adding two of the same subparts that also have assemblies. Make sure quantity gets incremented, and not 2 parts that are the same added
         form_data = {'subpart_part_number': p2.full_part_number(), 'count': 3, 'reference': '', 'do_not_load': False}
-        response = self.client.post(reverse('bom:part-add-subpart', kwargs={'part_id': p3.id, 'part_revision_id': p3.latest().id, }), form_data)
+        response = self.client.post(
+            reverse('bom:part-add-subpart', kwargs={'part_id': p3.id, 'part_revision_id': p3.latest().id, }), form_data)
         self.assertEqual(response.status_code, 302)
 
         # Below - make sure quantity gets incremented, not that there are > 1 parts
@@ -472,7 +487,8 @@ class TestBOM(TransactionTestCase):
 
         # Test adding a third, but make it DNL
         form_data = {'subpart_part_number': p2.full_part_number(), 'count': 3, 'reference': '', 'do_not_load': True}
-        response = self.client.post(reverse('bom:part-add-subpart', kwargs={'part_id': p3.id, 'part_revision_id': p3.latest().id, }), form_data)
+        response = self.client.post(
+            reverse('bom:part-add-subpart', kwargs={'part_id': p3.id, 'part_revision_id': p3.latest().id, }), form_data)
         self.assertEqual(response.status_code, 302)
 
         # Below - make sure quantity gets incremented, not that there are > 1 parts
@@ -498,7 +514,8 @@ class TestBOM(TransactionTestCase):
 
         # Test preventing infinite recursion
         form_data = {'subpart_part_number': p3.full_part_number(), 'count': 3, 'reference': '', 'do_not_load': False}
-        response = self.client.post(reverse('bom:part-add-subpart', kwargs={'part_id': p3.id, 'part_revision_id': p3.latest().id, }), form_data)
+        response = self.client.post(
+            reverse('bom:part-add-subpart', kwargs={'part_id': p3.id, 'part_revision_id': p3.latest().id, }), form_data)
         self.assertEqual(response.status_code, 302)
         found_error = False
         rejected_add = False
@@ -513,7 +530,8 @@ class TestBOM(TransactionTestCase):
         # Test preventing infinite recursion - Check that a subpart doesnt exist in a parent's parent assy / deep recursion
         # p3 has p2 in its assy, dont let p2 add p3 to it
         form_data = {'subpart_part_number': p3.full_part_number(), 'count': 3, 'reference': '', 'do_not_load': False}
-        response = self.client.post(reverse('bom:part-add-subpart', kwargs={'part_id': p2.id, 'part_revision_id': p2.latest().id, }), form_data)
+        response = self.client.post(
+            reverse('bom:part-add-subpart', kwargs={'part_id': p2.id, 'part_revision_id': p2.latest().id, }), form_data)
         self.assertEqual(response.status_code, 302)
         found_error = False
         rejected_add = False
@@ -583,7 +601,8 @@ class TestBOM(TransactionTestCase):
         self.assertEqual(response.status_code, 302)
         found_error = False
         for m in response.wsgi_request._messages:
-            if "Part already exists for manufacturer part 2 in row GhostBuster2000. Uploading of this part skipped." in str(m):
+            if "Part already exists for manufacturer part 2 in row GhostBuster2000. Uploading of this part skipped." in str(
+                m):
                 found_error = True
         self.assertTrue(found_error)
 
@@ -617,18 +636,23 @@ class TestBOM(TransactionTestCase):
         with open('bom/test_files/test_part_classes_no_comment.csv') as test_csv:
             response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''})
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('Part class 102 Resistor on row 3 is already defined. Uploading of this part class skipped.' in str(response.content))
+        self.assertTrue(
+            'Part class 102 Resistor on row 3 is already defined. Uploading of this part class skipped.' in str(
+                response.content))
 
         # Submit with a weird csv file that sort of works
         with open('bom/test_files/test_part_classes_blank_rows.csv') as test_csv:
             response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''})
         self.assertEqual(response.status_code, 200)
-        self.assertTrue('in row 3 does not have a value. Uploading of this part class skipped.' in str(response.content))
-        self.assertTrue('in row 4 does not have a value. Uploading of this part class skipped.' in str(response.content))
+        self.assertTrue(
+            'in row 3 does not have a value. Uploading of this part class skipped.' in str(response.content))
+        self.assertTrue(
+            'in row 4 does not have a value. Uploading of this part class skipped.' in str(response.content))
 
         # Submit with a csv file exported with a byte order mask, typically from MS word I think
         with open('bom/test_files/test_part_classes_byte_order.csv') as test_csv:
-            response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''}, follow=True)
+            response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
         messages = list(response.context.get('messages'))
         for msg in messages:
@@ -661,7 +685,8 @@ class TestBOM(TransactionTestCase):
         pcba = Part.objects.filter(number_class=pcba_class, number_item='00003', number_variation='0A').first()
 
         with open('bom/test_files/test_bom_652-00003-0A.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -677,7 +702,8 @@ class TestBOM(TransactionTestCase):
         pcba = Part.objects.filter(number_class=pcba_class, number_item='00004', number_variation='0A').first()
 
         with open('bom/test_files/test_bom_652-00004-0A.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -704,10 +730,12 @@ class TestBOM(TransactionTestCase):
     def test_add_sellerpart(self):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
 
-        response = self.client.get(reverse('bom:manufacturer-part-add-sellerpart', kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}))
+        response = self.client.get(reverse('bom:manufacturer-part-add-sellerpart',
+                                           kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}))
         self.assertEqual(response.status_code, 200)
 
-        response = self.client.post(reverse('bom:manufacturer-part-add-sellerpart', kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}))
+        response = self.client.post(reverse('bom:manufacturer-part-add-sellerpart',
+                                            kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}))
         self.assertEqual(response.status_code, 200)
 
         new_sellerpart_form_data = {
@@ -780,7 +808,9 @@ class TestBOM(TransactionTestCase):
             'name': '',
         }
 
-        response = self.client.post(reverse('bom:manufacturer-part-edit', kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}), data)
+        response = self.client.post(
+            reverse('bom:manufacturer-part-edit', kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}),
+            data)
         self.assertEqual(response.status_code, 302)
 
         data = {
@@ -790,7 +820,9 @@ class TestBOM(TransactionTestCase):
         }
 
         old_id = p1.primary_manufacturer_part.manufacturer.id
-        response = self.client.post(reverse('bom:manufacturer-part-edit', kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}), data)
+        response = self.client.post(
+            reverse('bom:manufacturer-part-edit', kwargs={'manufacturer_part_id': p1.primary_manufacturer_part.id}),
+            data)
         self.assertEqual(response.status_code, 302)
         p1.refresh_from_db()
         self.assertNotEqual(p1.primary_manufacturer_part.manufacturer.id, old_id)
@@ -1011,7 +1043,7 @@ class TestBOMIntelligent(TestBOM):
         response = self.client.post(reverse('bom:home'))
         self.assertEqual(response.status_code, 200)
         decoded_content = response.content.decode('utf-8')
-        main_content = decoded_content[decoded_content.find('<main>')+len('<main>'):decoded_content.rfind('</main>')]
+        main_content = decoded_content[decoded_content.find('<main>') + len('<main>'):decoded_content.rfind('</main>')]
         occurances = [m.start() for m in finditer(p1.full_part_number(), main_content)]
         self.assertEqual(len(occurances), 1)
 
@@ -1063,12 +1095,14 @@ class TestBOMIntelligent(TestBOM):
         pr6 = create_a_fake_part_revision(part=p5, assembly=assy)
 
         with open('bom/test_files/test_bom.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
         for msg in messages:
-            self.assertEqual(msg.tags, "error")  # Error loading 200-3333-00 via CSV because already in parent's BOM and has empty ref designators
+            self.assertEqual(msg.tags,
+                             "error")  # Error loading 200-3333-00 via CSV because already in parent's BOM and has empty ref designators
 
         subparts = p2.latest().assembly.subparts.all()
 
@@ -1120,7 +1154,8 @@ class TestBOMIntelligent(TestBOM):
         pcba = Part.objects.get(number_item='DYSON-123')
 
         with open('bom/test_files/test_bom_5_intelligent.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv}, follow=True)
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv},
+                                        follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -1155,6 +1190,7 @@ class TestBOMNoVariation(TestBOM):
     @skip('not applicable')
     def test_part_upload_bom_corner_cases(self):
         pass
+
 
 class TestForms(TestCase):
     def setUp(self):
