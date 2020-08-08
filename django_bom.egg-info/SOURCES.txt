@@ -68,6 +68,7 @@ bom/static/bom/css/treetable-theme.css
 bom/static/bom/img/_ionicons_svg_md-arrow-dropdown.svg
 bom/static/bom/img/_ionicons_svg_md-arrow-dropright.svg
 bom/static/bom/img/favicon.ico
+bom/static/bom/img/fixturfab_black.png
 bom/static/bom/img/google_drive_logo.svg
 bom/static/bom/img/indabom.png
 bom/static/bom/img/mouser.png
