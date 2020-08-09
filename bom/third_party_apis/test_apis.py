@@ -1,5 +1,5 @@
 from django.test import TestCase
-from bom.third_party_apis.mouser import MouserApi
+from .mouser import MouserApi
 from unittest import skip
 
 

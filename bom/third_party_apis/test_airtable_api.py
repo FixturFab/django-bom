@@ -3,9 +3,9 @@ from pytest_factoryboy import register
 
 from airtable import Airtable
 
-from bom.helpers import create_some_fake_parts, create_user_and_organization
-from bom.models import ManufacturerPart, Part, SellerPart
-from bom.third_party_apis import airtable_api
+from ..helpers import create_some_fake_parts, create_user_and_organization
+from ..models import ManufacturerPart, Part, SellerPart
+from . import airtable_api
 
 
 def test_get_existing_manufacturer_id():
