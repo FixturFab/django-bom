@@ -33,6 +33,7 @@ from bom.forms import PartInfoForm, PartFormSemiIntelligent, PartFormIntelligent
     PartRevisionNewForm, PartCSVForm, PartClassForm, PartClassSelectionForm, PartClassCSVForm, UploadBOMForm, \
     BOMCSVForm, PartClassFormSet, \
     OrganizationCreateForm, OrganizationFormEditSettings
+from bom.third_party_apis import airtable_api
 from bom.utils import listify_string, stringify_list, check_references_for_duplicates, prep_for_sorting_nicely
 from bom.csv_headers import PartsListCSVHeaders, PartsListCSVHeadersSemiIntelligent, PartClassesCSVHeaders, \
     BOMFlatCSVHeaders, BOMIndentedCSVHeaders, ManufacturerPartCSVHeaders, SellerPartCSVHeaders, \
@@ -915,6 +916,9 @@ def create_part(request):
 
                 new_part.primary_manufacturer_part = manufacturer_part
                 new_part.save()
+
+            # Add part to airtable
+            airtable_api.add_part(new_part)
 
             return HttpResponseRedirect(reverse('bom:part-info', kwargs={'part_id': str(new_part.id)}))
     else:

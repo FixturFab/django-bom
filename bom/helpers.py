@@ -1,6 +1,11 @@
+from django.contrib.auth import get_user_model
+
 from bom.models import Part, PartClass, Seller, SellerPart, Subpart, \
-    Manufacturer, Organization, ManufacturerPart, PartRevision, Assembly, User, AssemblySubparts
+    Manufacturer, Organization, ManufacturerPart, PartRevision, Assembly, AssemblySubparts
 from bom import constants
+
+
+User = get_user_model()
 
 
 def create_a_fake_organization(user, free=False, number_scheme=constants.NUMBER_SCHEME_SEMI_INTELLIGENT,

@@ -145,9 +145,11 @@ bom/templates/bom/upload-parts-help.html
 bom/templates/bom/upload-parts.html
 bom/templates/registration/login.html
 bom/third_party_apis/__init__.py
+bom/third_party_apis/airtable_api.py
 bom/third_party_apis/base_api.py
 bom/third_party_apis/google_drive.py
 bom/third_party_apis/mouser.py
+bom/third_party_apis/test_airtable_api.py
 bom/third_party_apis/test_apis.py
 bom/views/__init__.py
 bom/views/json_views.py
