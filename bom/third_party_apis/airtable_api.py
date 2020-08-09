@@ -1,5 +1,7 @@
 import logging
 
+from django.contrib.sites.models import Site
+
 from airtable import Airtable
 
 
@@ -69,13 +71,12 @@ def add_mfg_part(mfg_part):
     return result["id"]
 
 
-def add_part(part, part_url=None):
+def add_part(part):
     """
     Add a part to the Inventory table in airtable
     """
-    # Create part_url if it is not provided
-    if not part_url:
-        part_url = f"https://fixturfab.com/bom/part/{part.id}"
+    # Create part_url
+    part_url = f"https://{Site.objects.get_current().domain}/bom/part/{part.id}"
 
     # Get manufacturer and manfacturer part information
     mfg_parts = []
