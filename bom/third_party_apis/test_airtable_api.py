@@ -26,8 +26,8 @@ def test_get_new_manufacturer_id():
 
 
 def test_get_existing_supplier_id():
-    supplier_id = airtable_api.get_supplier_id("Digikey")
-    exp_id = "recUwVqcEeI4N8RA6"
+    supplier_id = airtable_api.get_supplier_id("Digi-Key")
+    exp_id = "recgLhmcupnca1swS"
     assert supplier_id == exp_id
 
 

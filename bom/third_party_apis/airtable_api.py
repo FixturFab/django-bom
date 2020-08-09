@@ -69,10 +69,14 @@ def add_mfg_part(mfg_part):
     return result["id"]
 
 
-def add_part(part):
+def add_part(part, part_url=None):
     """
     Add a part to the Inventory table in airtable
     """
+    # Create part_url if it is not provided
+    if not part_url:
+        part_url = f"https://fixturfab.com/bom/part/{part.id}"
+
     # Get manufacturer and manfacturer part information
     mfg_parts = []
     for mfg_part in part.manufacturer_parts():
@@ -91,7 +95,8 @@ def add_part(part):
         "Part Number": part.full_part_number(),
         "Description": part.description(),
         "Manufacturer Part": mfg_parts,
-        "Supplier": suppliers
+        "Supplier": suppliers,
+        "Django-BOM URL": part_url
     }
 
     inventory = Airtable(OPERATIONS_ID, "Inventory")
