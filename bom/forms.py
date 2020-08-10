@@ -29,6 +29,7 @@ from .utils import listify_string, stringify_list, check_references_for_duplicat
 from .csv_headers import PartsListCSVHeaders, PartClassesCSVHeaders, BOMFlatCSVHeaders, BOMIndentedCSVHeaders, \
     CSVHeaderError
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -87,6 +88,7 @@ class UserAddForm(forms.ModelForm):
     def clean_username(self):
         cleaned_data = super(UserAddForm, self).clean()
         username = cleaned_data.get('username')
+        user_model = get_user_model()
         try:
             user_model = get_user_model()
             user = user_model.objects.get(username=username)
@@ -99,7 +101,7 @@ class UserAddForm(forms.ModelForm):
                 validation_error = forms.ValidationError("User '{}' belongs to another organization.".format(username),
                                                          code='invalid')
                 self.add_error('username', validation_error)
-        except User.DoesNotExist:
+        except user_model.DoesNotExist:
             validation_error = forms.ValidationError("User '{}' does not exist.".format(username), code='invalid')
             self.add_error('username', validation_error)
 
