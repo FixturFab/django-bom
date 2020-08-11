@@ -90,7 +90,6 @@ class UserAddForm(forms.ModelForm):
         username = cleaned_data.get('username')
         user_model = get_user_model()
         try:
-            user_model = get_user_model()
             user = user_model.objects.get(username=username)
             user_meta = UserMeta.objects.get(user=user)
             if user_meta.organization == self.organization:
