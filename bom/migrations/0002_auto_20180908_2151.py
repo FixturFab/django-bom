@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0001_initial'),
     ]
@@ -14,11 +13,13 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='subpart',
             name='assembly_part',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='assembly_part', to='bom.Part'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='assembly_part', to='bom.Part'),
         ),
         migrations.AlterField(
             model_name='subpart',
             name='assembly_subpart',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='assembly_subpart', to='bom.Part'),
+            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE,
+                                    related_name='assembly_subpart', to='bom.Part'),
         ),
     ]

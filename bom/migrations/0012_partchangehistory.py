@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0011_auto_20181202_2113'),
     ]
@@ -16,8 +15,11 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('part_id', models.CharField(max_length=2)),
-                ('old_number_item', models.CharField(blank=True, default=None, max_length=4, validators=[django.core.validators.RegexValidator('^[0-9]*$', 'Only numeric characters are allowed.')])),
-                ('old_number_variation', models.CharField(blank=True, default=None, max_length=2, validators=[django.core.validators.RegexValidator('^[0-9a-zA-Z]*$', 'Only alphanumeric characters are allowed.')])),
+                ('old_number_item', models.CharField(blank=True, default=None, max_length=4, validators=[
+                    django.core.validators.RegexValidator('^[0-9]*$', 'Only numeric characters are allowed.')])),
+                ('old_number_variation', models.CharField(blank=True, default=None, max_length=2, validators=[
+                    django.core.validators.RegexValidator('^[0-9a-zA-Z]*$',
+                                                          'Only alphanumeric characters are allowed.')])),
                 ('old_description', models.CharField(default=None, max_length=255)),
                 ('old_revision', models.CharField(max_length=2)),
                 ('old_time_stamp', models.DateTimeField(auto_now=True)),

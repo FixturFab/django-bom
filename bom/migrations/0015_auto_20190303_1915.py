@@ -15,7 +15,6 @@ def update_partchangehistory(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0014_auto_20190223_2353'),
     ]

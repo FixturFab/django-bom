@@ -20,6 +20,7 @@ def synopsis(pr, make_searchable=False):
             except ValueError:
                 pass
         return elaborated
+
     s = ""
     s += verbosify(self.value, units=self.value_units if make_searchable else self.get_value_units_display())
     s += verbosify(self.description)
@@ -28,21 +29,35 @@ def synopsis(pr, make_searchable=False):
     s += verbosify(self.attribute)
     s += verbosify(self.package if make_searchable else self.get_package_display())
     s += verbosify(self.pin_count, post='pins')
-    s += verbosify(self.frequency, units=self.frequency_units if make_searchable else self.get_frequency_units_display())
-    s += verbosify(self.wavelength, units=self.wavelength_units if make_searchable else self.get_wavelength_units_display())
+    s += verbosify(self.frequency,
+                   units=self.frequency_units if make_searchable else self.get_frequency_units_display())
+    s += verbosify(self.wavelength,
+                   units=self.wavelength_units if make_searchable else self.get_wavelength_units_display())
     s += verbosify(self.memory, units=self.memory_units if make_searchable else self.get_memory_units_display())
     s += verbosify(self.interface if make_searchable else self.get_interface_display())
-    s += verbosify(self.supply_voltage, units=self.supply_voltage_units if make_searchable else self.get_supply_voltage_units_display(), post='supply')
-    s += verbosify(self.temperature_rating, units=self.temperature_rating_units if make_searchable else self.get_temperature_rating_units_display(), post='rating')
-    s += verbosify(self.power_rating, units=self.power_rating_units if make_searchable else self.get_power_rating_units_display(), post='rating')
-    s += verbosify(self.voltage_rating, units=self.voltage_rating_units if make_searchable else self.get_voltage_rating_units_display(), post='rating')
-    s += verbosify(self.current_rating, units=self.current_rating_units if make_searchable else self.get_current_rating_units_display(), post='rating')
+    s += verbosify(self.supply_voltage,
+                   units=self.supply_voltage_units if make_searchable else self.get_supply_voltage_units_display(),
+                   post='supply')
+    s += verbosify(self.temperature_rating,
+                   units=self.temperature_rating_units if make_searchable else self.get_temperature_rating_units_display(),
+                   post='rating')
+    s += verbosify(self.power_rating,
+                   units=self.power_rating_units if make_searchable else self.get_power_rating_units_display(),
+                   post='rating')
+    s += verbosify(self.voltage_rating,
+                   units=self.voltage_rating_units if make_searchable else self.get_voltage_rating_units_display(),
+                   post='rating')
+    s += verbosify(self.current_rating,
+                   units=self.current_rating_units if make_searchable else self.get_current_rating_units_display(),
+                   post='rating')
     s += verbosify(self.material)
     s += verbosify(self.color)
     s += verbosify(self.finish)
-    s += verbosify(self.length, units=self.length_units if make_searchable else self.get_length_units_display(), pre='L')
+    s += verbosify(self.length, units=self.length_units if make_searchable else self.get_length_units_display(),
+                   pre='L')
     s += verbosify(self.width, units=self.width_units if make_searchable else self.get_width_units_display(), pre='W')
-    s += verbosify(self.height, units=self.height_units if make_searchable else self.get_height_units_display(), pre='H')
+    s += verbosify(self.height, units=self.height_units if make_searchable else self.get_height_units_display(),
+                   pre='H')
     s += verbosify(self.weight, units=self.weight_units if make_searchable else self.get_weight_units_display())
     return s
 

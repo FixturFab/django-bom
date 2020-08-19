@@ -111,7 +111,8 @@ class CSVHeaders(ABC):
                 if c == 0:
                     if report: raise CSVHeaderError(("Missing column named \'{}\'").format(operand))
                 elif c > 1:
-                    if report: raise CSVHeaderError(("Multiple columns with same or synonymous name \'{}\'").format(operand))
+                    if report: raise CSVHeaderError(
+                        ("Multiple columns with same or synonymous name \'{}\'").format(operand))
             elif operator == 'and':
                 c = self.count_matches(headers, operand)
                 if c == 0 or prev_count == 0:
@@ -123,7 +124,8 @@ class CSVHeaders(ABC):
             elif operator == 'me':
                 c = self.count_matches(headers, operand)
                 if c > 1 and prev_count > 1:
-                    if report: raise CSVHeaderError(("Conflicting column named \'{}\'").format(self.get_default(operand)))
+                    if report: raise CSVHeaderError(
+                        ("Conflicting column named \'{}\'").format(self.get_default(operand)))
             return c
 
         c = 0
@@ -156,8 +158,12 @@ class CSVHeaders(ABC):
 
 class ManufacturerPartCSVHeaders(CSVHeaders):
     all_headers_defns = [
-        CSVHeader('manufacturer_name', name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg', 'manufacturer', 'manufacturer name', ]),
-        CSVHeader('manufacturer_part_number', name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number', 'mfg part number', 'manufacturer part number']),
+        CSVHeader('manufacturer_name',
+                  name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg', 'manufacturer',
+                                'manufacturer name', ]),
+        CSVHeader('manufacturer_part_number',
+                  name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number', 'mfg part number',
+                                'manufacturer part number']),
     ]
 
 
@@ -218,42 +224,54 @@ class PartsListCSVHeaders(CSVHeaders):
     ]
 
     all_headers_defns = [
-        CSVHeader('description', name_options=['desc', 'desc.', ]),
-        CSVHeader('manufacturer_name', name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg', 'manufacturer', 'manufacturer name', ]),
-        CSVHeader('manufacturer_part_number', name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number', 'mfg part number', 'manufacturer part number']),
-        CSVHeader('part_number', name_options=['part number', 'part no', ]),
-        CSVHeader('revision', name_options=['rev', 'part_revision', ]),
-    ] + part_attributes
+                            CSVHeader('description', name_options=['desc', 'desc.', ]),
+                            CSVHeader('manufacturer_name',
+                                      name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg',
+                                                    'manufacturer', 'manufacturer name', ]),
+                            CSVHeader('manufacturer_part_number',
+                                      name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number',
+                                                    'mfg part number', 'manufacturer part number']),
+                            CSVHeader('part_number', name_options=['part number', 'part no', ]),
+                            CSVHeader('revision', name_options=['rev', 'part_revision', ]),
+                        ] + part_attributes
 
 
 class PartsListCSVHeadersSemiIntelligent(PartsListCSVHeaders):
     all_headers_defns = [
-        CSVHeader('description', name_options=['desc', 'desc.', ]),
-        CSVHeader('manufacturer_name', name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg', 'manufacturer', 'manufacturer name', ]),
-        CSVHeader('manufacturer_part_number', name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number', 'mfg part number', 'manufacturer part number']),
-        CSVHeader('part_class', name_options=['class', 'part_category']),
-        CSVHeader('part_number', name_options=['part number', 'part no', ]),
-        CSVHeader('revision', name_options=['rev', 'part_revision', ]),
-    ] + PartsListCSVHeaders.part_attributes
+                            CSVHeader('description', name_options=['desc', 'desc.', ]),
+                            CSVHeader('manufacturer_name',
+                                      name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg',
+                                                    'manufacturer', 'manufacturer name', ]),
+                            CSVHeader('manufacturer_part_number',
+                                      name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number',
+                                                    'mfg part number', 'manufacturer part number']),
+                            CSVHeader('part_class', name_options=['class', 'part_category']),
+                            CSVHeader('part_number', name_options=['part number', 'part no', ]),
+                            CSVHeader('revision', name_options=['rev', 'part_revision', ]),
+                        ] + PartsListCSVHeaders.part_attributes
 
 
 class BOMFlatCSVHeaders(CSVHeaders):
     all_headers_defns = [
-        CSVHeader('part_number', name_options=['part number', 'part no', ]),
-        CSVHeader('quantity', name_options=['count', 'qty', ]),
-        CSVHeader('do_not_load', name_options=['dnl', 'dnp', 'do_not_populate', 'do_not_load', 'do not load', 'do not populate', ]),
-        CSVHeader('part_class', name_options=['class', 'part_category']),
-        CSVHeader('references', name_options=['designator', 'designators', 'reference', ]),
-        CSVHeader('synopsis', name_options=['part_synopsis', ]),
-        CSVHeader('revision', name_options=['rev', 'part_revision', 'rev.']),
-    ] + ManufacturerPartCSVHeaders.all_headers_defns \
-      + SellerPartCSVHeaders.all_headers_defns + [
-        CSVHeader('extended_qty', name_options=['extended_quantity', 'part_extended_quantity', 'part_ext_qty', ]),
-        CSVHeader('extended_cost', name_options=['part_extended_cost', 'part_ext_cost', ]),
-        CSVHeader('order_qty', name_options=['part_order_qty', 'part_order_quantity', 'order_quantity', ]),
-        CSVHeader('out_of_pocket_cost', name_options=['part_out_of_pocket_cost', 'cost', ]),
-        CSVHeader('lead_time_days', name_options=['part_lead_time_days', ]),
-    ]
+                            CSVHeader('part_number', name_options=['part number', 'part no', ]),
+                            CSVHeader('quantity', name_options=['count', 'qty', ]),
+                            CSVHeader('do_not_load',
+                                      name_options=['dnl', 'dnp', 'do_not_populate', 'do_not_load', 'do not load',
+                                                    'do not populate', ]),
+                            CSVHeader('part_class', name_options=['class', 'part_category']),
+                            CSVHeader('references', name_options=['designator', 'designators', 'reference', ]),
+                            CSVHeader('synopsis', name_options=['part_synopsis', ]),
+                            CSVHeader('revision', name_options=['rev', 'part_revision', 'rev.']),
+                        ] + ManufacturerPartCSVHeaders.all_headers_defns \
+                        + SellerPartCSVHeaders.all_headers_defns + [
+                            CSVHeader('extended_qty',
+                                      name_options=['extended_quantity', 'part_extended_quantity', 'part_ext_qty', ]),
+                            CSVHeader('extended_cost', name_options=['part_extended_cost', 'part_ext_cost', ]),
+                            CSVHeader('order_qty',
+                                      name_options=['part_order_qty', 'part_order_quantity', 'order_quantity', ]),
+                            CSVHeader('out_of_pocket_cost', name_options=['part_out_of_pocket_cost', 'cost', ]),
+                            CSVHeader('lead_time_days', name_options=['part_lead_time_days', ]),
+                        ]
 
 
 class BOMIndentedCSVHeaders(BOMFlatCSVHeaders):

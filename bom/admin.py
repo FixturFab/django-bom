@@ -125,9 +125,10 @@ class AssemblyAdmin(admin.ModelAdmin):
     ]
 
 
-admin.site.unregister(User)
+# admin.site.unregister(User)
+User = get_user_model()
+# admin.site.register(User, UserAdmin)
 
-admin.site.register(User, UserAdmin)
 admin.site.register(Organization, OrganizationAdmin)
 admin.site.register(Seller, SellerAdmin)
 admin.site.register(SellerPart, SellerPartAdmin)

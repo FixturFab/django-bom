@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0024_auto_20191214_1342'),
     ]
@@ -13,12 +12,18 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='partrevision',
             name='height_units',
-            field=models.CharField(blank=True, choices=[('', '-----'), ('mil', 'mil'), ('in', 'in'), ('ft', 'ft'), ('yd', 'yd'), ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'), ('Other', 'Other')], default=None, max_length=5, null=True),
+            field=models.CharField(blank=True,
+                                   choices=[('', '-----'), ('mil', 'mil'), ('in', 'in'), ('ft', 'ft'), ('yd', 'yd'),
+                                            ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'),
+                                            ('Other', 'Other')], default=None, max_length=5, null=True),
         ),
         migrations.AlterField(
             model_name='partrevision',
             name='length_units',
-            field=models.CharField(blank=True, choices=[('', '-----'), ('mil', 'mil'), ('in', 'in'), ('ft', 'ft'), ('yd', 'yd'), ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'), ('Other', 'Other')], default=None, max_length=5, null=True),
+            field=models.CharField(blank=True,
+                                   choices=[('', '-----'), ('mil', 'mil'), ('in', 'in'), ('ft', 'ft'), ('yd', 'yd'),
+                                            ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'),
+                                            ('Other', 'Other')], default=None, max_length=5, null=True),
         ),
         migrations.AlterField(
             model_name='partrevision',
@@ -28,11 +33,17 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='partrevision',
             name='wavelength_units',
-            field=models.CharField(blank=True, choices=[('', '-----'), ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'), ('A', 'Å'), ('Other', 'Other')], default=None, max_length=5, null=True),
+            field=models.CharField(blank=True,
+                                   choices=[('', '-----'), ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'),
+                                            ('nm', 'nm'), ('A', 'Å'), ('Other', 'Other')], default=None, max_length=5,
+                                   null=True),
         ),
         migrations.AlterField(
             model_name='partrevision',
             name='width_units',
-            field=models.CharField(blank=True, choices=[('', '-----'), ('mil', 'mil'), ('in', 'in'), ('ft', 'ft'), ('yd', 'yd'), ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'), ('Other', 'Other')], default=None, max_length=5, null=True),
+            field=models.CharField(blank=True,
+                                   choices=[('', '-----'), ('mil', 'mil'), ('in', 'in'), ('ft', 'ft'), ('yd', 'yd'),
+                                            ('km', 'km'), ('m', 'm'), ('cm', 'cm'), ('um', 'μm'), ('nm', 'nm'),
+                                            ('Other', 'Other')], default=None, max_length=5, null=True),
         ),
     ]

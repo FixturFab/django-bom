@@ -1,9 +1,15 @@
+from django.contrib.auth import get_user_model
+
 from bom.models import Part, PartClass, Seller, SellerPart, Subpart, \
-    Manufacturer, Organization, ManufacturerPart, PartRevision, Assembly, User, AssemblySubparts
+    Manufacturer, Organization, ManufacturerPart, PartRevision, Assembly, AssemblySubparts
 from bom import constants
 
 
-def create_a_fake_organization(user, free=False, number_scheme=constants.NUMBER_SCHEME_SEMI_INTELLIGENT, number_variation_len=constants.NUMBER_VARIATION_LEN_DEFAULT):
+User = get_user_model()
+
+
+def create_a_fake_organization(user, free=False, number_scheme=constants.NUMBER_SCHEME_SEMI_INTELLIGENT,
+                               number_variation_len=constants.NUMBER_VARIATION_LEN_DEFAULT):
     org, created = Organization.objects.get_or_create(
         name="Atlas",
         subscription=constants.SUBSCRIPTION_TYPE_FREE if free else constants.SUBSCRIPTION_TYPE_PRO,
@@ -14,7 +20,8 @@ def create_a_fake_organization(user, free=False, number_scheme=constants.NUMBER_
     return org
 
 
-def create_user_and_organization(free=False, number_scheme=constants.NUMBER_SCHEME_SEMI_INTELLIGENT, number_variation_len=constants.NUMBER_VARIATION_LEN_DEFAULT):
+def create_user_and_organization(free=False, number_scheme=constants.NUMBER_SCHEME_SEMI_INTELLIGENT,
+                                 number_variation_len=constants.NUMBER_VARIATION_LEN_DEFAULT):
     user = User.objects.create_user('kasper', 'kasper@McFadden.com', 'ghostpassword')
     organization = create_a_fake_organization(user, free, number_scheme, number_variation_len)
     profile = user.bom_profile(organization=organization)
@@ -24,7 +31,8 @@ def create_user_and_organization(free=False, number_scheme=constants.NUMBER_SCHE
 
 
 def create_some_fake_part_classes(organization):
-    pc1, c = PartClass.objects.get_or_create(code=500, name='Wendy', comment='Mechanical Switches', organization=organization)
+    pc1, c = PartClass.objects.get_or_create(code=500, name='Wendy', comment='Mechanical Switches',
+                                             organization=organization)
     pc2, c = PartClass.objects.get_or_create(code=200, name='Archibald', comment='', organization=organization)
     pc3, c = PartClass.objects.get_or_create(code='50A', name='Ghost', comment='Like Kasper', organization=organization)
     return pc1, pc2, pc3
@@ -78,13 +86,13 @@ def create_some_fake_manufacturers(organization):
 
 
 def create_a_fake_seller_part(
-        seller,
-        manufacturer_part,
-        moq,
-        mpq,
-        unit_cost,
-        lead_time_days,
-        nre_cost=None):
+    seller,
+    manufacturer_part,
+    moq,
+    mpq,
+    unit_cost,
+    lead_time_days,
+    nre_cost=None):
     sp1 = SellerPart(
         seller=seller,
         manufacturer_part=manufacturer_part,
@@ -177,7 +185,7 @@ def create_some_fake_parts(organization):
 
     (s1, s2, s3) = create_some_fake_sellers(organization=organization)
 
-    create_a_fake_seller_part(s1, mp1, moq=1, mpq=1, unit_cost=0, lead_time_days=None, nre_cost=0,)
+    create_a_fake_seller_part(s1, mp1, moq=1, mpq=1, unit_cost=0, lead_time_days=None, nre_cost=0, )
     create_a_fake_seller_part(s1, mp1, moq=1, mpq=1, unit_cost=1.2, lead_time_days=20, nre_cost=500)
     create_a_fake_seller_part(s2, mp1, moq=1000, mpq=5000, unit_cost=0.1005, lead_time_days=7, nre_cost=0)
     create_a_fake_seller_part(s2, mp2, moq=200, mpq=200, unit_cost=0.5, lead_time_days=47, nre_cost=1)

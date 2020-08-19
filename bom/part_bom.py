@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class PartBom(AsDictModel):
-    def __init__(self, part_revision, quantity, unit_cost=None, missing_item_costs=0, nre=None, out_of_pocket_cost=None):
+    def __init__(self, part_revision, quantity, unit_cost=None, missing_item_costs=0, nre=None,
+                 out_of_pocket_cost=None):
         self.part_revision = part_revision
         self.parts = OrderedDict()
         self.quantity = quantity
@@ -48,9 +49,11 @@ class PartBom(AsDictModel):
                 bom_part.order_cost = bom_part.total_extended_quantity * bom_part.seller_part.unit_cost
             except AttributeError:
                 pass
-            self.unit_cost = (self.unit_cost + bom_part.seller_part.unit_cost * bom_part.extended_quantity) if bom_part.seller_part.unit_cost is not None else self.unit_cost
+            self.unit_cost = (
+                    self.unit_cost + bom_part.seller_part.unit_cost * bom_part.extended_quantity) if bom_part.seller_part.unit_cost is not None else self.unit_cost
             self.out_of_pocket_cost = self.out_of_pocket_cost + bom_part.out_of_pocket_cost()
-            self.nre = (self.nre + bom_part.seller_part.nre_cost) if bom_part.seller_part.nre_cost is not None else self.nre
+            self.nre = (
+                    self.nre + bom_part.seller_part.nre_cost) if bom_part.seller_part.nre_cost is not None else self.nre
         else:
             self.missing_item_costs += 1
 
@@ -91,7 +94,8 @@ class PartBom(AsDictModel):
 
 
 class PartBomItem(AsDictModel):
-    def __init__(self, bom_id, part, part_revision, do_not_load, references, quantity, extended_quantity, seller_part=None):
+    def __init__(self, bom_id, part, part_revision, do_not_load, references, quantity, extended_quantity,
+                 seller_part=None):
         # top_level_quantity is the highest quantity, typically a order quantity for the highest assembly level in a BOM
         # A bom item should not care about its parent quantity
         self.bom_id = bom_id
@@ -107,7 +111,8 @@ class PartBomItem(AsDictModel):
 
         self._currency = self.part.organization.currency
 
-        self.order_cost = Money(0, self._currency)  # order_cost is updated similar to above order_quantity - Set when appending to PartBom
+        self.order_cost = Money(0,
+                                self._currency)  # order_cost is updated similar to above order_quantity - Set when appending to PartBom
         self.seller_part = seller_part
 
         self.api_info = None

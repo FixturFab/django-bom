@@ -26,7 +26,6 @@ def update_part_revisions(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ('bom', '0018_auto_20190616_2143'),
     ]

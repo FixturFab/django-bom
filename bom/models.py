@@ -4,17 +4,22 @@ import logging
 
 from django.core.cache import cache
 from django.db import models
-from django.contrib.auth.models import User, Group
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.validators import MaxValueValidator, MinValueValidator
 from .csv_headers import PartsListCSVHeadersSemiIntelligent, PartsListCSVHeaders
 from .part_bom import PartIndentedBomItem, PartBomItem, PartBom
 from .utils import increment_str, prep_for_sorting_nicely, listify_string, stringify_list, strip_trailing_zeros
 from .validators import alphanumeric, numeric, validate_pct
-from .constants import VALUE_UNITS, PACKAGE_TYPES, POWER_UNITS, INTERFACE_TYPES, TEMPERATURE_UNITS, DISTANCE_UNITS, WAVELENGTH_UNITS, \
-    WEIGHT_UNITS, FREQUENCY_UNITS, VOLTAGE_UNITS, CURRENT_UNITS, MEMORY_UNITS, SUBSCRIPTION_TYPES, ROLE_TYPES, CONFIGURATION_TYPES, \
-    NUMBER_SCHEMES, NUMBER_SCHEME_SEMI_INTELLIGENT, NUMBER_CLASS_CODE_LEN_DEFAULT, NUMBER_CLASS_CODE_LEN_MIN, NUMBER_CLASS_CODE_LEN_MAX, \
-    NUMBER_ITEM_LEN_DEFAULT, NUMBER_ITEM_LEN_MIN, NUMBER_ITEM_LEN_MAX, NUMBER_VARIATION_LEN_DEFAULT, NUMBER_VARIATION_LEN_MIN, NUMBER_VARIATION_LEN_MAX, \
+from .constants import VALUE_UNITS, PACKAGE_TYPES, POWER_UNITS, INTERFACE_TYPES, TEMPERATURE_UNITS, DISTANCE_UNITS, \
+    WAVELENGTH_UNITS, \
+    WEIGHT_UNITS, FREQUENCY_UNITS, VOLTAGE_UNITS, CURRENT_UNITS, MEMORY_UNITS, SUBSCRIPTION_TYPES, ROLE_TYPES, \
+    CONFIGURATION_TYPES, \
+    NUMBER_SCHEMES, NUMBER_SCHEME_SEMI_INTELLIGENT, NUMBER_CLASS_CODE_LEN_DEFAULT, NUMBER_CLASS_CODE_LEN_MIN, \
+    NUMBER_CLASS_CODE_LEN_MAX, \
+    NUMBER_ITEM_LEN_DEFAULT, NUMBER_ITEM_LEN_MIN, NUMBER_ITEM_LEN_MAX, NUMBER_VARIATION_LEN_DEFAULT, \
+    NUMBER_VARIATION_LEN_MIN, NUMBER_VARIATION_LEN_MAX, \
     NUMBER_SCHEME_INTELLIGENT
 from .base_classes import AsDictModel
 
@@ -28,14 +33,17 @@ logger = logging.getLogger(__name__)
 class Organization(models.Model):
     name = models.CharField(max_length=255, default=None)
     subscription = models.CharField(max_length=1, choices=SUBSCRIPTION_TYPES)
-    owner = models.ForeignKey(User, on_delete=models.PROTECT)
+    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
     number_scheme = models.CharField(max_length=1, choices=NUMBER_SCHEMES, default=NUMBER_SCHEME_SEMI_INTELLIGENT)
     number_class_code_len = models.PositiveIntegerField(default=NUMBER_CLASS_CODE_LEN_DEFAULT,
-                                                        validators=[MinValueValidator(NUMBER_CLASS_CODE_LEN_MIN), MaxValueValidator(NUMBER_CLASS_CODE_LEN_MAX)])
+                                                        validators=[MinValueValidator(NUMBER_CLASS_CODE_LEN_MIN),
+                                                                    MaxValueValidator(NUMBER_CLASS_CODE_LEN_MAX)])
     number_item_len = models.PositiveIntegerField(default=NUMBER_ITEM_LEN_DEFAULT,
-                                                  validators=[MinValueValidator(NUMBER_ITEM_LEN_MIN), MaxValueValidator(NUMBER_ITEM_LEN_MAX)])
+                                                  validators=[MinValueValidator(NUMBER_ITEM_LEN_MIN),
+                                                              MaxValueValidator(NUMBER_ITEM_LEN_MAX)])
     number_variation_len = models.PositiveIntegerField(default=NUMBER_VARIATION_LEN_DEFAULT,
-                                                       validators=[MinValueValidator(NUMBER_VARIATION_LEN_MIN), MaxValueValidator(NUMBER_VARIATION_LEN_MAX)])
+                                                       validators=[MinValueValidator(NUMBER_VARIATION_LEN_MIN),
+                                                                   MaxValueValidator(NUMBER_VARIATION_LEN_MAX)])
     google_drive_parent = models.CharField(max_length=128, blank=True, default=None, null=True)
     currency = CurrencyField(max_length=3, choices=CURRENCY_CHOICES, default='USD')
 
@@ -62,11 +70,12 @@ class Organization(models.Model):
 
     def save(self, *args, **kwargs):
         super(Organization, self).save()
-        SellerPart.objects.filter(seller__organization=self).update(unit_cost_currency=self.currency, nre_cost_currency=self.currency)
+        SellerPart.objects.filter(seller__organization=self).update(unit_cost_currency=self.currency,
+                                                                    nre_cost_currency=self.currency)
 
 
 class UserMeta(models.Model):
-    user = models.OneToOneField(User, db_index=True, on_delete=models.CASCADE)
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, db_index=True, on_delete=models.CASCADE)
     organization = models.ForeignKey(Organization, blank=True, null=True, on_delete=models.PROTECT)
     role = models.CharField(max_length=1, choices=ROLE_TYPES)
 
@@ -77,7 +86,8 @@ class UserMeta(models.Model):
             else:
                 org_name = self.user.first_name + ' ' + self.user.last_name
 
-            organization, created = Organization.objects.get_or_create(owner=self.user, defaults={'name': org_name, 'subscription': 'F'})
+            organization, created = Organization.objects.get_or_create(owner=self.user,
+                                                                       defaults={'name': org_name, 'subscription': 'F'})
 
             self.organization = organization
             self.role = 'A'
@@ -94,7 +104,8 @@ class UserMeta(models.Model):
     def _user_meta(self, organization=None):
         return UserMeta.objects.get_or_create(user=self, defaults={'organization': organization})[0]
 
-    User.add_to_class('bom_profile', _user_meta)
+    UserModel = get_user_model()
+    UserModel.add_to_class('bom_profile', _user_meta)
 
 
 class PartClass(models.Model):
@@ -129,9 +140,11 @@ class Manufacturer(models.Model, AsDictModel):
 # that should be done often.
 class Part(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE, db_index=True)
-    number_class = models.ForeignKey(PartClass, default=None, blank=True, null=True, related_name='number_class', on_delete=models.PROTECT, db_index=True)
+    number_class = models.ForeignKey(PartClass, default=None, blank=True, null=True, related_name='number_class',
+                                     on_delete=models.PROTECT, db_index=True)
     number_item = models.CharField(max_length=NUMBER_ITEM_LEN_MAX, default=None, blank=True)
-    number_variation = models.CharField(max_length=NUMBER_VARIATION_LEN_MAX, default=None, blank=True, null=True, validators=[alphanumeric])
+    number_variation = models.CharField(max_length=NUMBER_VARIATION_LEN_MAX, default=None, blank=True, null=True,
+                                        validators=[alphanumeric])
     primary_manufacturer_part = models.ForeignKey('ManufacturerPart', default=None, null=True, blank=True,
                                                   on_delete=models.SET_NULL, related_name='primary_manufacturer_part')
     google_drive_parent = models.CharField(max_length=128, blank=True, default=None, null=True)
@@ -226,8 +239,10 @@ class Part(models.Model):
 
     def seller_parts(self, exclude_primary=False):
         manufacturer_parts = ManufacturerPart.objects.filter(part=self)
-        q = SellerPart.objects.filter(manufacturer_part__in=manufacturer_parts).order_by('seller', 'minimum_order_quantity')\
-            .select_related('manufacturer_part').select_related('manufacturer_part__manufacturer').select_related('seller')
+        q = SellerPart.objects.filter(manufacturer_part__in=manufacturer_parts).order_by('seller',
+                                                                                         'minimum_order_quantity') \
+            .select_related('manufacturer_part').select_related('manufacturer_part__manufacturer').select_related(
+            'seller')
         if exclude_primary and self.primary_manufacturer_part is not None and self.primary_manufacturer_part.optimal_seller():
             return q.exclude(id=self.primary_manufacturer_part.optimal_seller().id)
         return q
@@ -241,7 +256,8 @@ class Part(models.Model):
     def where_used(self):
         revisions = PartRevision.objects.filter(part=self)
         used_in_subparts = Subpart.objects.filter(part_revision__in=revisions)
-        used_in_assembly_ids = AssemblySubparts.objects.filter(subpart__in=used_in_subparts).values_list('assembly', flat=True)
+        used_in_assembly_ids = AssemblySubparts.objects.filter(subpart__in=used_in_subparts).values_list('assembly',
+                                                                                                         flat=True)
         used_in_prs = PartRevision.objects.filter(assembly__in=used_in_assembly_ids)
         return used_in_prs
 
@@ -289,7 +305,8 @@ class Part(models.Model):
                 }
                 self.number_item = FORMATS[self.organization.number_item_len].format(
                     int(last_number_item.number_item) + 1)
-        if (self.number_variation is None or self.number_variation == '') and self.organization.number_variation_len > 0:
+        if (
+            self.number_variation is None or self.number_variation == '') and self.organization.number_variation_len > 0:
             last_number_variation = Part.objects.all().filter(
                 number_class=self.number_class,
                 number_item=self.number_item).order_by('number_variation').last()
@@ -318,8 +335,10 @@ class PartRevision(models.Model):
     configuration = models.CharField(max_length=1, choices=CONFIGURATION_TYPES, default='W')
     revision = models.CharField(max_length=4, db_index=True, default='1')
     assembly = models.ForeignKey('Assembly', default=None, null=True, on_delete=models.PROTECT, db_index=True)
-    displayable_synopsis = models.CharField(editable=False, default="", null=True, blank=True, max_length=255, db_index=True)
-    searchable_synopsis = models.CharField(editable=False, default="", null=True, blank=True, max_length=255, db_index=True)
+    displayable_synopsis = models.CharField(editable=False, default="", null=True, blank=True, max_length=255,
+                                            db_index=True)
+    searchable_synopsis = models.CharField(editable=False, default="", null=True, blank=True, max_length=255,
+                                           db_index=True)
 
     class Meta:
         unique_together = (('part', 'revision'),)
@@ -349,7 +368,8 @@ class PartRevision(models.Model):
     height = models.DecimalField(max_digits=7, decimal_places=3, default=None, null=True, blank=True)
     weight_units = models.CharField(max_length=5, default=None, null=True, blank=True, choices=WEIGHT_UNITS)
     weight = models.DecimalField(max_digits=7, decimal_places=3, default=None, null=True, blank=True)
-    temperature_rating_units = models.CharField(max_length=5, default=None, null=True, blank=True, choices=TEMPERATURE_UNITS)
+    temperature_rating_units = models.CharField(max_length=5, default=None, null=True, blank=True,
+                                                choices=TEMPERATURE_UNITS)
     temperature_rating = models.DecimalField(max_digits=7, decimal_places=3, default=None, null=True, blank=True)
     wavelength_units = models.CharField(max_length=5, default=None, null=True, blank=True, choices=WAVELENGTH_UNITS)
     wavelength = models.DecimalField(max_digits=7, decimal_places=3, default=None, null=True, blank=True)
@@ -390,21 +410,36 @@ class PartRevision(models.Model):
         s += verbosify(self.attribute)
         s += verbosify(self.package if make_searchable else self.get_package_display())
         s += verbosify(self.pin_count, post='pins')
-        s += verbosify(self.frequency, units=self.frequency_units if make_searchable else self.get_frequency_units_display())
-        s += verbosify(self.wavelength, units=self.wavelength_units if make_searchable else self.get_wavelength_units_display())
+        s += verbosify(self.frequency,
+                       units=self.frequency_units if make_searchable else self.get_frequency_units_display())
+        s += verbosify(self.wavelength,
+                       units=self.wavelength_units if make_searchable else self.get_wavelength_units_display())
         s += verbosify(self.memory, units=self.memory_units if make_searchable else self.get_memory_units_display())
         s += verbosify(self.interface if make_searchable else self.get_interface_display())
-        s += verbosify(self.supply_voltage, units=self.supply_voltage_units if make_searchable else self.get_supply_voltage_units_display(), post='supply')
-        s += verbosify(self.temperature_rating, units=self.temperature_rating_units if make_searchable else self.get_temperature_rating_units_display(), post='rating')
-        s += verbosify(self.power_rating, units=self.power_rating_units if make_searchable else self.get_power_rating_units_display(), post='rating')
-        s += verbosify(self.voltage_rating, units=self.voltage_rating_units if make_searchable else self.get_voltage_rating_units_display(), post='rating')
-        s += verbosify(self.current_rating, units=self.current_rating_units if make_searchable else self.get_current_rating_units_display(), post='rating')
+        s += verbosify(self.supply_voltage,
+                       units=self.supply_voltage_units if make_searchable else self.get_supply_voltage_units_display(),
+                       post='supply')
+        s += verbosify(self.temperature_rating,
+                       units=self.temperature_rating_units if make_searchable else self.get_temperature_rating_units_display(),
+                       post='rating')
+        s += verbosify(self.power_rating,
+                       units=self.power_rating_units if make_searchable else self.get_power_rating_units_display(),
+                       post='rating')
+        s += verbosify(self.voltage_rating,
+                       units=self.voltage_rating_units if make_searchable else self.get_voltage_rating_units_display(),
+                       post='rating')
+        s += verbosify(self.current_rating,
+                       units=self.current_rating_units if make_searchable else self.get_current_rating_units_display(),
+                       post='rating')
         s += verbosify(self.material)
         s += verbosify(self.color)
         s += verbosify(self.finish)
-        s += verbosify(self.length, units=self.length_units if make_searchable else self.get_length_units_display(), pre='L')
-        s += verbosify(self.width, units=self.width_units if make_searchable else self.get_width_units_display(), pre='W')
-        s += verbosify(self.height, units=self.height_units if make_searchable else self.get_height_units_display(), pre='H')
+        s += verbosify(self.length, units=self.length_units if make_searchable else self.get_length_units_display(),
+                       pre='L')
+        s += verbosify(self.width, units=self.width_units if make_searchable else self.get_width_units_display(),
+                       pre='W')
+        s += verbosify(self.height, units=self.height_units if make_searchable else self.get_height_units_display(),
+                       pre='H')
         s += verbosify(self.weight, units=self.weight_units if make_searchable else self.get_weight_units_display())
         return s[:255]
 
@@ -426,7 +461,8 @@ class PartRevision(models.Model):
         super(PartRevision, self).save(*args, **kwargs)
 
     def indented(self, top_level_quantity=100):
-        def indented_given_bom(bom, part_revision, parent_id=None, parent=None, qty=1, parent_qty=1, indent_level=0, subpart=None, reference='', do_not_load=False):
+        def indented_given_bom(bom, part_revision, parent_id=None, parent=None, qty=1, parent_qty=1, indent_level=0,
+                               subpart=None, reference='', do_not_load=False):
             bom_item_id = (parent_id or '') + (str(part_revision.id) + '-dnl' if do_not_load else str(part_revision.id))
             extended_quantity = parent_qty * qty
             total_extended_quantity = top_level_quantity * extended_quantity
@@ -460,8 +496,10 @@ class PartRevision(models.Model):
                 for sp in part_revision.assembly.subparts.all():
                     qty = sp.count
                     reference = sp.reference
-                    indented_given_bom(bom, sp.part_revision, parent_id=bom_item_id, parent=part_revision, qty=qty, parent_qty=parent_qty,
-                                       indent_level=indent_level, subpart=sp, reference=reference, do_not_load=sp.do_not_load)
+                    indented_given_bom(bom, sp.part_revision, parent_id=bom_item_id, parent=part_revision, qty=qty,
+                                       parent_qty=parent_qty,
+                                       indent_level=indent_level, subpart=sp, reference=reference,
+                                       do_not_load=sp.do_not_load)
 
         bom = PartBom(part_revision=self, quantity=top_level_quantity)
         indented_given_bom(bom, self)
@@ -502,16 +540,18 @@ class PartRevision(models.Model):
                 for sp in part_revision.assembly.subparts.all():
                     qty = sp.count
                     reference = sp.reference
-                    flat_given_bom(bom, sp.part_revision, parent=part_revision, qty=qty, parent_qty=parent_qty, subpart=sp, reference=reference)
+                    flat_given_bom(bom, sp.part_revision, parent=part_revision, qty=qty, parent_qty=parent_qty,
+                                   subpart=sp, reference=reference)
 
         flat_bom = PartBom(part_revision=self, quantity=top_level_quantity)
         flat_given_bom(flat_bom, self)
 
         # Sort by references, if no references then use part number.
-        # Note that need to convert part number to a list so can be compared with the 
+        # Note that need to convert part number to a list so can be compared with the
         # list-ified string returned by prep_for_sorting_nicely.
         def sort_by_references(p):
             return prep_for_sorting_nicely(p.references) if p.references else p.__str__().split()
+
         if sort:
             flat_bom.parts = sorted(flat_bom.parts.values(), key=sort_by_references)
         return flat_bom
@@ -521,7 +561,8 @@ class PartRevision(models.Model):
         # it gets used by being a subpart to an assembly of a part_revision
         # so we can look up subparts, then their assemblys, then their partrevisions
         used_in_subparts = Subpart.objects.filter(part_revision=self)
-        used_in_assembly_ids = AssemblySubparts.objects.filter(subpart__in=used_in_subparts).values_list('assembly', flat=True)
+        used_in_assembly_ids = AssemblySubparts.objects.filter(subpart__in=used_in_subparts).values_list('assembly',
+                                                                                                         flat=True)
         used_in_pr = PartRevision.objects.filter(assembly__in=used_in_assembly_ids).order_by('-revision')
         return used_in_pr
 
@@ -557,7 +598,8 @@ class AssemblySubparts(models.Model):
 
 
 class Subpart(models.Model):
-    part_revision = models.ForeignKey('PartRevision', related_name='assembly_subpart', null=True, on_delete=models.CASCADE)
+    part_revision = models.ForeignKey('PartRevision', related_name='assembly_subpart', null=True,
+                                      on_delete=models.CASCADE)
     count = models.PositiveIntegerField(default=1)
     reference = models.TextField(default='', blank=True, null=True)
     do_not_load = models.BooleanField(default=False, verbose_name='Do Not Load')

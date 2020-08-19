@@ -20,7 +20,7 @@ def increment_str(s):
 #
 #       https://blog.codinghorror.com/sorting-for-humans-natural-sort-order/
 #
-# Code has been adapted for for use as sort function for Python sorted(). Enables sorting an 
+# Code has been adapted for for use as sort function for Python sorted(). Enables sorting an
 # iterable whose items are strings represented by a mix of alphanumeric characters. For the
 # default sort for {'R14', 'R5'} is:
 #
@@ -54,7 +54,7 @@ def listify_string(st):
     return split_st
 
 
-# Convert a list of items into a comma-separated string without any surrounding brackets, 
+# Convert a list of items into a comma-separated string without any surrounding brackets,
 # for example:
 #
 # list = [1, 2, 3, 4]
@@ -68,7 +68,7 @@ def stringify_list(li):
     return ', '.join(str(x) for x in li)
 
 
-# Check a string reference designator for duplicates as compared to a running set of 
+# Check a string reference designator for duplicates as compared to a running set of
 # reference already seen. A reference designator may contain multiple delimited references,
 # so need to check the new designator for duplicates before checking against references
 # already seen. All duplicate references are added to the set duplicate_refs.
@@ -106,6 +106,7 @@ def get_from_dict(input_dict, key_options):
         if val:
             return val
     return None
+
 
 # via https://github.com/hayj/SystemTools/blob/master/systemtools/number.py
 def parse_number(text):
@@ -209,12 +210,12 @@ def parse_number(text):
         else:
             # Now replace symbols so the right symbol is "." and all left are "":
             rightSymbolIndex = max(n.rfind(','), n.rfind(' '), n.rfind('.'))
-            rightSymbol = n[rightSymbolIndex:rightSymbolIndex+1]
+            rightSymbol = n[rightSymbolIndex:rightSymbolIndex + 1]
             if rightSymbol == " ":
                 return parseNumber(n.replace(" ", "_"))
             n = n.replace(rightSymbol, "R")
             leftSymbolIndex = max(n.rfind(','), n.rfind(' '), n.rfind('.'))
-            leftSymbol = n[leftSymbolIndex:leftSymbolIndex+1]
+            leftSymbol = n[leftSymbolIndex:leftSymbolIndex + 1]
             n = n.replace(leftSymbol, "L")
             n = n.replace("L", "")
             n = n.replace("R", ".")
@@ -224,5 +225,6 @@ def parse_number(text):
             return int(n)
         else:
             return n
-    except: pass
+    except:
+        pass
     return None
