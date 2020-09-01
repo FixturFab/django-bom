@@ -917,7 +917,7 @@ def create_part(request):
                 new_part.primary_manufacturer_part = manufacturer_part
                 new_part.save()
 
-            # Add part to airtable
+            # Add part to airtableconda
             airtable_api.add_part(new_part)
 
             return HttpResponseRedirect(reverse('bom:part-info', kwargs={'part_id': str(new_part.id)}))
