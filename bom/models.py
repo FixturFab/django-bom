@@ -324,6 +324,9 @@ class Part(models.Model):
             self.assign_part_number()
         super(Part, self).save()
 
+    def verbose_str(self):
+        return f'{self.full_part_number()} ┆ {self.description()}'
+
     def __str__(self):
         return u'%s' % (self.full_part_number())
 
@@ -334,7 +337,7 @@ class PartRevision(models.Model):
     timestamp = models.DateTimeField(default=timezone.now)
     configuration = models.CharField(max_length=1, choices=CONFIGURATION_TYPES, default='W')
     revision = models.CharField(max_length=4, db_index=True, default='1')
-    assembly = models.ForeignKey('Assembly', default=None, null=True, on_delete=models.PROTECT, db_index=True)
+    assembly = models.ForeignKey('Assembly', default=None, null=True, on_delete=models.CASCADE, db_index=True)
     displayable_synopsis = models.CharField(editable=False, default="", null=True, blank=True, max_length=255,
                                             db_index=True)
     searchable_synopsis = models.CharField(editable=False, default="", null=True, blank=True, max_length=255,
@@ -624,7 +627,7 @@ class Assembly(models.Model):
 class ManufacturerPart(models.Model, AsDictModel):
     part = models.ForeignKey(Part, on_delete=models.CASCADE, db_index=True)
     manufacturer_part_number = models.CharField(max_length=128, default='', blank=True)
-    manufacturer = models.ForeignKey(Manufacturer, default=None, blank=True, null=True, on_delete=models.PROTECT)
+    manufacturer = models.ForeignKey(Manufacturer, default=None, blank=True, null=True, on_delete=models.CASCADE)
     mouser_disable = models.BooleanField(default=False)
 
     class Meta:

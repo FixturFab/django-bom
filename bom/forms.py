@@ -12,14 +12,10 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, MaxLengthValidator, MinLengthValidator
 from djmoney.money import Money
 
-from .constants import VALUE_UNITS, PACKAGE_TYPES, POWER_UNITS, INTERFACE_TYPES, TEMPERATURE_UNITS, DISTANCE_UNITS, \
-    WAVELENGTH_UNITS, \
-    WEIGHT_UNITS, FREQUENCY_UNITS, VOLTAGE_UNITS, CURRENT_UNITS, MEMORY_UNITS, SUBSCRIPTION_TYPES, ROLE_TYPES, \
-    CONFIGURATION_TYPES, NUMBER_SCHEME_SEMI_INTELLIGENT, \
-    NUMBER_SCHEME_INTELLIGENT, ROLE_TYPE_VIEWER, NUMBER_CLASS_CODE_LEN_DEFAULT, NUMBER_CLASS_CODE_LEN_MIN, \
-    NUMBER_CLASS_CODE_LEN_MAX, \
-    NUMBER_ITEM_LEN_DEFAULT, NUMBER_ITEM_LEN_MIN, NUMBER_ITEM_LEN_MAX, NUMBER_VARIATION_LEN_DEFAULT, \
-    NUMBER_VARIATION_LEN_MIN, NUMBER_VARIATION_LEN_MAX
+from .constants import VALUE_UNITS, PACKAGE_TYPES, POWER_UNITS, INTERFACE_TYPES, TEMPERATURE_UNITS, DISTANCE_UNITS, WAVELENGTH_UNITS, \
+    WEIGHT_UNITS, FREQUENCY_UNITS, VOLTAGE_UNITS, CURRENT_UNITS, MEMORY_UNITS, SUBSCRIPTION_TYPES, ROLE_TYPES, CONFIGURATION_TYPES, NUMBER_SCHEME_SEMI_INTELLIGENT, \
+    NUMBER_SCHEME_INTELLIGENT, ROLE_TYPE_VIEWER, NUMBER_CLASS_CODE_LEN_DEFAULT, NUMBER_CLASS_CODE_LEN_MIN, NUMBER_CLASS_CODE_LEN_MAX, \
+    NUMBER_ITEM_LEN_DEFAULT, NUMBER_ITEM_LEN_MIN, NUMBER_ITEM_LEN_MAX, NUMBER_VARIATION_LEN_DEFAULT, NUMBER_VARIATION_LEN_MIN, NUMBER_VARIATION_LEN_MAX
 from .form_fields import AutocompleteTextInput
 from .models import Part, PartClass, Manufacturer, ManufacturerPart, Subpart, Seller, SellerPart, UserMeta, \
     Organization, PartRevision, AssemblySubparts, Assembly
@@ -250,12 +246,9 @@ class ManufacturerPartForm(forms.ModelForm):
 
 
 class SellerPartForm(forms.ModelForm):
-    unit_cost = forms.DecimalField(required=True, decimal_places=4, max_digits=17)
-    nre_cost = forms.DecimalField(required=True, decimal_places=4, max_digits=17, label='NRE cost')
-
     class Meta:
         model = SellerPart
-        exclude = ['manufacturer_part', 'data_source', 'unit_cost', 'nre_cost', ]
+        exclude = ['manufacturer_part', 'data_source', ]
 
     new_seller = forms.CharField(max_length=128, label='-or- Create new seller (leave blank if selecting)',
                                  required=False)
@@ -265,11 +258,19 @@ class SellerPartForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.organization = kwargs.pop('organization', None)
         self.manufacturer_part = kwargs.pop('manufacturer_part', None)
+        self.base_fields['unit_cost'] = forms.DecimalField(required=True, decimal_places=4, max_digits=17)
+        self.base_fields['nre_cost'] = forms.DecimalField(required=True, decimal_places=4, max_digits=17, label='NRE cost')
+
+        instance = kwargs.get('instance')
+        if instance:
+            initial = kwargs.get('initial', {})
+            initial['unit_cost'] = instance.unit_cost.amount
+            initial['nre_cost'] = instance.nre_cost.amount
+            kwargs['initial'] = initial
         super(SellerPartForm, self).__init__(*args, **kwargs)
         if self.manufacturer_part is not None:
             self.instance.manufacturer_part = self.manufacturer_part
-        self.fields['seller'].queryset = Seller.objects.filter(
-            organization=self.organization).order_by('name')
+        self.fields['seller'].queryset = Seller.objects.filter(organization=self.organization).order_by('name')
         self.fields['seller'].required = False
 
     def clean(self):
@@ -430,10 +431,9 @@ class PartClassCSVForm(forms.Form):
                             code='invalid')
                         self.add_error(None, validation_error)
                         continue
-                    elif not code.isdigit() or int(code) < 0:
+                    elif len(code) != self.organization.number_class_code_len:
                         validation_error = forms.ValidationError(
-                            "Part class 'code' in row {} must be a positive number. Uploading of this part class skipped.".format(
-                                row_count),
+                            "Length of part class 'code' in row {} is different than the organization class length {}. Uploading of this part class skipped.".format(row_count, self.organization.number_class_code_len),
                             code='invalid')
                         self.add_error(None, validation_error)
                         continue
@@ -530,6 +530,11 @@ class PartCSVForm(forms.Form):
                 description = csv_headers.get_val_from_row(part_data, 'description')
                 value = csv_headers.get_val_from_row(part_data, 'value')
                 value_units = csv_headers.get_val_from_row(part_data, 'value_units')
+                seller_name = csv_headers.get_val_from_row(part_data, 'seller')
+                unit_cost = csv_headers.get_val_from_row(part_data, 'unit_cost')
+                nre_cost = csv_headers.get_val_from_row(part_data, 'part_nre_cost')
+                moq = csv_headers.get_val_from_row(part_data, 'moq')
+                mpq = csv_headers.get_val_from_row(part_data, 'minimum_pack_quantity')
 
                 # Check part number for uniqueness. If part number not specified
                 # then Part.save() will create one.
@@ -559,10 +564,9 @@ class PartCSVForm(forms.Form):
                     else:
                         try:
                             number_item = part_number
-                            Part.objects.get(number_class=None, number_item=number_item, number_variation=None,
-                                             organization=self.organization)
-                            self.add_error(None,
-                                           f"Part number {part_number} in row {row_count} already exists. Uploading of this part skipped.")
+                            Part.objects.get(number_class=None, number_item=number_item, number_variation=None, organization=self.organization)
+                            self.add_error(None, f"Part number {part_number} in row {row_count} already exists. Uploading of this part skipped.")
+                            continue
                         except Part.DoesNotExist:
                             pass
                 elif part_class:
@@ -576,9 +580,10 @@ class PartCSVForm(forms.Form):
                                            part_data[csv_headers.get_default('part_class')], row_count))
                         continue
                 else:
-                    self.add_error(None,
-                                   "In row {} need to specify a part_class or a part_number. Uploading of this part skipped.".format(
-                                       row_count))
+                    if self.organization.number_scheme == NUMBER_SCHEME_SEMI_INTELLIGENT:
+                        self.add_error(None, "In row {} need to specify a part_class or part_number. Uploading of this part skipped.".format(row_count))
+                    else:
+                        self.add_error(None, "In row {} need to specify a part_number. Uploading of this part skipped.".format(row_count))
                     continue
 
                 if not revision:
@@ -606,6 +611,7 @@ class PartCSVForm(forms.Form):
 
                 skip = False
                 part_revision = PartRevision()
+                part_revision.revision = revision
 
                 # Required properties:
                 if description is None:
@@ -727,6 +733,11 @@ class PartCSVForm(forms.Form):
                                                                                             manufacturer=mfg)
                         if part.primary_manufacturer_part is None and manufacturer_part is not None:
                             part.primary_manufacturer_part = manufacturer_part
+                            part.save()
+
+                        if seller_name and unit_cost and nre_cost:
+                            seller, created = Seller.objects.get_or_create(name__iexact=seller_name, organization=self.organization, defaults={'name': seller_name})
+                            seller_part, created = SellerPart.objects.get_or_create(manufacturer_part=manufacturer_part, seller=seller, unit_cost=unit_cost, nre_cost=nre_cost, minimum_order_quantity=moq, minimum_pack_quantity=mpq)
 
                     self.successes.append("Part {0} on row {1} created.".format(part.full_part_number(), row_count))
                 else:
@@ -991,11 +1002,9 @@ class AddSubpartForm(forms.Form):
         self.unusable_part_rev_ids.append(self.part_revision.id)
         super(AddSubpartForm, self).__init__(*args, **kwargs)
         self.fields['subpart_part_number'] = forms.CharField(required=True, label="Subpart part number",
-                                                             widget=AutocompleteTextInput(
-                                                                 attrs={'placeholder': 'Select a part.'},
-                                                                 queryset=Part.objects.filter(
-                                                                     organization=self.organization).exclude(
-                                                                     id=self.part_id)))
+                                                    widget=AutocompleteTextInput(attrs={'placeholder': 'Select a part.'},
+                                                                                 queryset=Part.objects.filter(organization=self.organization).exclude(id=self.part_id),
+                                                                                 verbose_string_function=Part.verbose_str))
 
     def clean_count(self):
         count = self.cleaned_data['count']
@@ -1140,9 +1149,11 @@ class BOMCSVForm(forms.Form):
             headers = [h.lower() for h in next(reader)]
 
             # Handle utf-8-sig encoding
-            if "\ufeff" in headers[0]:
+            if len(headers) > 0 and "\ufeff" in headers[0]:
                 reader = csv.reader(codecs.iterdecode(file, 'utf-8-sig'), dialect)
                 headers = [h.lower() for h in next(reader)]
+            elif len(headers) == 0:
+                self.warnings.append("No headers found in CSV file.")
 
             csv_headers = BOMIndentedCSVHeaders()
 
@@ -1308,7 +1319,7 @@ class BOMCSVForm(forms.Form):
 
                 if len(existing_subpart_qs) == 0:
 
-                    if len(reference_list) != count:
+                    if len(reference_list) != count and len(reference_list) > 0:
                         self.warnings.append(
                             f"The number of reference designators ({len(reference_list)}) for subpart {subpart_part} on row {row_count} does not match the subpart quantity ({count}). Quantity automatically adjusted.")
                         count = len(reference_list)

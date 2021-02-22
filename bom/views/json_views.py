@@ -43,7 +43,7 @@ class MouserPartMatchBOM(BomJsonResponse):
                 part_seller_info = mouser.search_and_match(mp, quantity=bom_part_quantity,
                                                            currency=organization.currency)
             except BaseApiError as err:
-                self.response['errors'].append(err)
+                self.response['errors'].append(str(err))
                 continue
 
             try:
