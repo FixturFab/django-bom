@@ -224,31 +224,31 @@ class PartsListCSVHeaders(CSVHeaders):
     ]
 
     all_headers_defns = [
-                            CSVHeader('description', name_options=['desc', 'desc.', ]),
-                            CSVHeader('manufacturer_name',
-                                      name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg',
-                                                    'manufacturer', 'manufacturer name', ]),
-                            CSVHeader('manufacturer_part_number',
-                                      name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number',
-                                                    'mfg part number', 'manufacturer part number']),
-                            CSVHeader('part_number', name_options=['part number', 'part no', ]),
-                            CSVHeader('revision', name_options=['rev', 'part_revision', ]),
-                        ] + part_attributes
+        CSVHeader('description', name_options=['desc', 'desc.', ]),
+        CSVHeader('manufacturer_name', name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg', 'manufacturer', 'manufacturer name', ]),
+        CSVHeader('manufacturer_part_number', name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number', 'mfg part number', 'manufacturer part number']),
+        CSVHeader('part_number', name_options=['part number', 'part no', ]),
+        CSVHeader('revision', name_options=['rev', 'part_revision', ]),
+    ] + part_attributes \
+      + SellerPartCSVHeaders.all_headers_defns + [
+        CSVHeader('lead_time_days', name_options=['part_lead_time_days', ]),
+        CSVHeader('minimum_pack_quantity', name_options=['part_minimum_pack_quantity', 'mpq' ]),
+    ]
 
 
 class PartsListCSVHeadersSemiIntelligent(PartsListCSVHeaders):
     all_headers_defns = [
-                            CSVHeader('description', name_options=['desc', 'desc.', ]),
-                            CSVHeader('manufacturer_name',
-                                      name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg',
-                                                    'manufacturer', 'manufacturer name', ]),
-                            CSVHeader('manufacturer_part_number',
-                                      name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number',
-                                                    'mfg part number', 'manufacturer part number']),
-                            CSVHeader('part_class', name_options=['class', 'part_category']),
-                            CSVHeader('part_number', name_options=['part number', 'part no', ]),
-                            CSVHeader('revision', name_options=['rev', 'part_revision', ]),
-                        ] + PartsListCSVHeaders.part_attributes
+        CSVHeader('description', name_options=['desc', 'desc.', ]),
+        CSVHeader('manufacturer_name', name_options=['mfg_name', 'manufacturer_name', 'part_manufacturer', 'mfg', 'manufacturer', 'manufacturer name', ]),
+        CSVHeader('manufacturer_part_number', name_options=['mpn', 'mfg_part_number', 'part_manufacturer_part_number', 'mfg part number', 'manufacturer part number']),
+        CSVHeader('part_class', name_options=['class', 'part_category']),
+        CSVHeader('part_number', name_options=['part number', 'part no', ]),
+        CSVHeader('revision', name_options=['rev', 'part_revision', ]),
+    ] + PartsListCSVHeaders.part_attributes \
+      + SellerPartCSVHeaders.all_headers_defns + [
+        CSVHeader('lead_time_days', name_options=['part_lead_time_days', ]),
+        CSVHeader('minimum_pack_quantity', name_options=['part_minimum_pack_quantity', 'mpq' ]),
+    ]
 
 
 class BOMFlatCSVHeaders(CSVHeaders):

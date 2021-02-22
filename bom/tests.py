@@ -14,6 +14,8 @@ from .forms import PartInfoForm, PartFormSemiIntelligent, AddSubpartForm, Seller
 
 from . import constants
 
+TEST_FILES_DIR = "bom/test_files"
+
 
 class TestBomAuth(TransactionTestCase):
     def setUp(self):
@@ -179,9 +181,8 @@ class TestBOM(TransactionTestCase):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
 
         test_file = 'test_bom.csv' if self.organization.number_variation_len > 0 else 'test_bom_6_no_variations.csv'
-        with open(f'bom/test_files/{test_file}') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/{test_file}') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -206,9 +207,9 @@ class TestBOM(TransactionTestCase):
         self.assertEqual(subparts[2].count, 2)
         self.assertEqual(subparts[2].do_not_load, True)
 
-        with open('bom/test_files/test_bom_2.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv},
-                                        follow=True)
+
+        with open(f'{TEST_FILES_DIR}/test_bom_2.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -218,9 +219,8 @@ class TestBOM(TransactionTestCase):
 
     def test_part_upload_bom_corner_cases(self):
         (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
-        with open('bom/test_files/test_bom_3_recursion.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_bom_3_recursion.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -228,9 +228,8 @@ class TestBOM(TransactionTestCase):
             self.assertEqual(msg.tags, "error")
             self.assertTrue("recursion" in str(msg.message))
 
-        with open('bom/test_files/test_bom_4_no_part_rev.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_bom_4_no_part_rev.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p1.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -573,7 +572,7 @@ class TestBOM(TransactionTestCase):
         create_some_fake_part_classes(self.organization)
 
         # Should pass
-        with open('bom/test_files/test_new_parts.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_new_parts.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv}, follow=True)
         messages = list(response.context.get('messages'))
         for msg in messages:
@@ -586,7 +585,7 @@ class TestBOM(TransactionTestCase):
             self.assertIsNotNone(p.latest())
 
         # Should fail because class doesn't exist
-        with open('bom/test_files/test_new_parts_2.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_new_parts_2.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv})
         self.assertEqual(response.status_code, 302)
         found_error = False
@@ -596,7 +595,7 @@ class TestBOM(TransactionTestCase):
         self.assertTrue(found_error)
 
         # Part should be skipped because it already exists
-        with open('bom/test_files/test_new_parts_3.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_new_parts_3.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv})
         self.assertEqual(response.status_code, 302)
         found_error = False
@@ -610,7 +609,7 @@ class TestBOM(TransactionTestCase):
         create_some_fake_part_classes(self.organization)
 
         # Should break with data error
-        with open('bom/test_files/test_new_parts_broken.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_new_parts_broken.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv}, follow=True)
         messages = list(response.context.get('messages'))
 
@@ -618,9 +617,20 @@ class TestBOM(TransactionTestCase):
         for msg in messages:
             self.assertEqual(msg.tags, 'error')
 
+    def test_upload_part_with_sellers(self):
+        create_some_fake_part_classes(self.organization)
+        # Should pass
+        initial_parts_count = Part.objects.all().count()
+        with open('bom/test_files/test_new_parts_sellers.csv') as test_csv:
+            response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv})
+        self.assertEqual(response.status_code, 302)
+
+        parts_count = Part.objects.all().count()
+        self.assertEqual(parts_count - initial_parts_count, 4)
+
     def test_upload_part_classes(self):
         # Should pass
-        with open('bom/test_files/test_part_classes.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_part_classes.csv') as test_csv:
             response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''})
         self.assertEqual(response.status_code, 200)
 
@@ -633,7 +643,7 @@ class TestBOM(TransactionTestCase):
         self.assertEqual(response.status_code, 200)
 
         # Submit with blank header and comments
-        with open('bom/test_files/test_part_classes_no_comment.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_part_classes_no_comment.csv') as test_csv:
             response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
@@ -641,7 +651,7 @@ class TestBOM(TransactionTestCase):
                 response.content))
 
         # Submit with a weird csv file that sort of works
-        with open('bom/test_files/test_part_classes_blank_rows.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_part_classes_blank_rows.csv') as test_csv:
             response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''})
         self.assertEqual(response.status_code, 200)
         self.assertTrue(
@@ -650,9 +660,8 @@ class TestBOM(TransactionTestCase):
             'in row 4 does not have a value. Uploading of this part class skipped.' in str(response.content))
 
         # Submit with a csv file exported with a byte order mask, typically from MS word I think
-        with open('bom/test_files/test_part_classes_byte_order.csv') as test_csv:
-            response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_part_classes_byte_order.csv') as test_csv:
+            response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''}, follow=True)
         self.assertEqual(response.status_code, 200)
         messages = list(response.context.get('messages'))
         for msg in messages:
@@ -662,14 +671,16 @@ class TestBOM(TransactionTestCase):
         self.organization.number_item_len = 5
         self.organization.save()
 
-        with open('bom/test_files/test_part_classes_4.csv') as test_csv:
+        # Upload part classes
+        with open(f'{TEST_FILES_DIR}/test_part_classes_4.csv') as test_csv:
             response = self.client.post(reverse('bom:settings'), {'file': test_csv, 'submit-part-class-upload': ''})
         self.assertEqual(response.status_code, 200)
 
         new_part_class_count = PartClass.objects.all().count()
         self.assertEqual(new_part_class_count, 39)
 
-        with open('bom/test_files/test_new_parts_4.csv') as test_csv:
+        # Upload parts
+        with open(f'{TEST_FILES_DIR}/test_new_parts_4.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv}, follow=True)
         messages = list(response.context.get('messages'))
         for msg in messages:
@@ -684,9 +695,8 @@ class TestBOM(TransactionTestCase):
         pcba_class = PartClass.objects.filter(code=652).first()
         pcba = Part.objects.filter(number_class=pcba_class, number_item='00003', number_variation='0A').first()
 
-        with open('bom/test_files/test_bom_652-00003-0A.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_bom_652-00003-0A.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -701,9 +711,8 @@ class TestBOM(TransactionTestCase):
         self.assertEqual(subparts[2].reference, 'C23')
         pcba = Part.objects.filter(number_class=pcba_class, number_item='00004', number_variation='0A').first()
 
-        with open('bom/test_files/test_bom_652-00004-0A.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_bom_652-00004-0A.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -767,9 +776,7 @@ class TestBOM(TransactionTestCase):
             'ncnr': True,
         }
 
-        response = self.client.post(reverse('bom:sellerpart-edit', kwargs={'sellerpart_id': p1.optimal_seller().id}),
-                                    edit_sellerpart_form_data)
-
+        response = self.client.post(reverse('bom:sellerpart-edit', kwargs={'sellerpart_id': p1.optimal_seller().id}), edit_sellerpart_form_data)
         self.assertEqual(response.status_code, 302)
 
     def test_sellerpart_delete(self):
@@ -1094,9 +1101,8 @@ class TestBOMIntelligent(TestBOM):
         assy = create_a_fake_assembly()
         pr6 = create_a_fake_part_revision(part=p5, assembly=assy)
 
-        with open('bom/test_files/test_bom.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_bom.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p2.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -1122,11 +1128,44 @@ class TestBOMIntelligent(TestBOM):
 
         # part_count = Part.objects.all().count()
         # Should pass
-        with open('bom/test_files/test_new_parts_5_intelligent.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_new_parts_5_intelligent.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv})
         self.assertEqual(response.status_code, 302)
         new_part_count = Part.objects.all().count()
         self.assertEqual(new_part_count, 4)
+
+        # Part should be skipped because it already exists
+        with open(f'{TEST_FILES_DIR}/test_new_parts_5_intelligent.csv') as test_csv:
+            response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv})
+        self.assertEqual(response.status_code, 302)
+        found_error = False
+        for m in response.wsgi_request._messages:
+            if "already exists" in str(m):
+                found_error = True
+        self.assertTrue(found_error)
+
+        # Only one part should exist
+        self.assertEqual(Part.objects.filter(number_item='C0402X5R10V001').count(), 1)
+
+        # Uploading this BOM should work, and multiple parts should not be created
+        p = Part.objects.first()
+        with open(f'{TEST_FILES_DIR}/test_bom_5_intelligent.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': p.id}), {'file': test_csv}, follow=True)
+        self.assertEqual(response.status_code, 200)
+
+        messages = list(response.context.get('messages'))
+        for msg in messages:
+            self.assertTrue("This should not happen." not in msg.message, msg=msg.message)
+
+    def test_upload_part_with_sellers(self):
+        # Should pass
+        initial_parts_count = Part.objects.all().count()
+        with open('bom/test_files/test_new_parts_sellers_intelligent.csv') as test_csv:
+            response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv})
+        self.assertEqual(response.status_code, 302)
+
+        parts_count = Part.objects.all().count()
+        self.assertEqual(parts_count - initial_parts_count, 4)
 
     @skip('not applicable')
     def test_upload_part_classes(self):
@@ -1141,7 +1180,7 @@ class TestBOMIntelligent(TestBOM):
         self.organization.number_item_len = 5
         self.organization.save()
 
-        with open('bom/test_files/test_new_parts_5_intelligent.csv') as test_csv:
+        with open(f'{TEST_FILES_DIR}/test_new_parts_5_intelligent.csv') as test_csv:
             response = self.client.post(reverse('bom:upload-parts'), {'file': test_csv}, follow=True)
         messages = list(response.context.get('messages'))
         for msg in messages:
@@ -1153,9 +1192,8 @@ class TestBOMIntelligent(TestBOM):
 
         pcba = Part.objects.get(number_item='DYSON-123')
 
-        with open('bom/test_files/test_bom_5_intelligent.csv') as test_csv:
-            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv},
-                                        follow=True)
+        with open(f'{TEST_FILES_DIR}/test_bom_5_intelligent.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pcba.id}), {'file': test_csv}, follow=True)
         self.assertEqual(response.status_code, 200)
 
         messages = list(response.context.get('messages'))
@@ -1168,6 +1206,15 @@ class TestBOMIntelligent(TestBOM):
         self.assertEqual(subparts[0].reference, 'C1, C2, C3')
         self.assertEqual(subparts[1].reference, 'C4, C5')
         self.assertEqual(subparts[2].reference, '')
+
+        pt1, pt2, pt3, pt4 = create_some_fake_parts(self.organization)
+        with open(f'{TEST_FILES_DIR}/test_bom_5_intelligent_no_reference.csv') as test_csv:
+            response = self.client.post(reverse('bom:part-upload-bom', kwargs={'part_id': pt1.id}), {'file': test_csv}, follow=True)
+        self.assertEqual(response.status_code, 200)
+        subparts = pt1.latest().assembly.subparts.all().order_by('id')
+        self.assertNotEqual(subparts[0].count, 0)
+        self.assertNotEqual(subparts[1].count, 0)
+        self.assertNotEqual(subparts[2].count, 0)
 
 
 class TestBOMNoVariation(TestBOM):
@@ -1284,8 +1331,18 @@ class TestForms(TestCase):
             'ncnr': True,
         }
 
-        form = SellerPartForm(organization=self.organization, data=form_data)
-        self.assertTrue(form.is_valid())
+        filled_form = SellerPartForm(form_data, organization=self.organization)
+        self.assertTrue(filled_form.is_valid())
+
+        (p1, p2, p3, p4) = create_some_fake_parts(organization=self.organization)
+        sp = p1.optimal_seller()
+        sp.unit_cost = 10
+        sp.nre_cost = 22
+        sp.save()
+
+        filled_form = SellerPartForm(instance=sp, organization=self.organization)
+        self.assertFalse("$10.0" in filled_form.as_ul())
+        self.assertFalse("$22.0" in filled_form.as_ul())
 
 
 class TestJsonViews(TestCase):
