@@ -24,19 +24,15 @@ from functools import reduce
 
 from json import loads, dumps
 
-from bom.models import Part, PartClass, Subpart, SellerPart, Organization, Manufacturer, ManufacturerPart, \
+from bom.models import Part, PartClass, Subpart, SellerPart, Organization, Manufacturer, ManufacturerPart, User, \
     UserMeta, PartRevision, Assembly, AssemblySubparts
-from bom.forms import PartInfoForm, PartFormSemiIntelligent, PartFormIntelligent, AddSubpartForm, SubpartForm, FileForm, \
-    ManufacturerForm, \
-    ManufacturerPartForm, SellerPartForm, UserCreateForm, UserForm, UserMetaForm, UserAddForm, OrganizationForm, \
-    OrganizationNumberLenForm, PartRevisionForm, \
-    PartRevisionNewForm, PartCSVForm, PartClassForm, PartClassSelectionForm, PartClassCSVForm, UploadBOMForm, \
-    BOMCSVForm, PartClassFormSet, \
+from bom.forms import PartInfoForm, PartFormSemiIntelligent, PartFormIntelligent, AddSubpartForm, SubpartForm, FileForm, ManufacturerForm, \
+    ManufacturerPartForm, SellerPartForm, UserCreateForm, UserForm, UserMetaForm, UserAddForm, OrganizationForm, OrganizationNumberLenForm, PartRevisionForm, \
+    PartRevisionNewForm, PartCSVForm, PartClassForm, PartClassSelectionForm, PartClassCSVForm, UploadBOMForm, BOMCSVForm, PartClassFormSet, \
     OrganizationCreateForm, OrganizationFormEditSettings
 from bom.third_party_apis import airtable_api
 from bom.utils import listify_string, stringify_list, check_references_for_duplicates, prep_for_sorting_nicely
-from bom.csv_headers import PartsListCSVHeaders, PartsListCSVHeadersSemiIntelligent, PartClassesCSVHeaders, \
-    BOMFlatCSVHeaders, BOMIndentedCSVHeaders, ManufacturerPartCSVHeaders, SellerPartCSVHeaders, \
+from bom.csv_headers import PartsListCSVHeaders, PartsListCSVHeadersSemiIntelligent, PartClassesCSVHeaders, BOMFlatCSVHeaders, BOMIndentedCSVHeaders, ManufacturerPartCSVHeaders, SellerPartCSVHeaders, \
     CSVHeader
 
 logger = logging.getLogger(__name__)
@@ -185,6 +181,7 @@ def home(request):
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = 'attachment; filename="indabom_parts_search.csv"'
         csv_headers = organization.part_list_csv_headers()
+        seller_csv_headers = SellerPartCSVHeaders()
         writer = csv.DictWriter(response, fieldnames=csv_headers.get_default_all())
         writer.writeheader()
         for part_rev in part_revs:
@@ -200,9 +197,8 @@ def home(request):
                         'part_manufacturer_part_number'): part_rev.part.primary_manufacturer_part.manufacturer_part_number if part_rev.part.primary_manufacturer_part is not None else '',
                 }
                 for field_name in csv_headers.get_default_all():
-                    if field_name not in csv_headers.get_defaults_list(
-                        ['part_number', 'part_category', 'part_synopsis', 'part_revision', 'part_manufacturer',
-                         'part_manufacturer_part_number', ]):
+                    if field_name not in csv_headers.get_defaults_list(['part_number', 'part_category', 'part_synopsis', 'part_revision', 'part_manufacturer', 'part_manufacturer_part_number', ]
+                                                                       + seller_csv_headers.get_default_all()):
                         attr = getattr(part_rev, field_name)
                         row.update({csv_headers.get_default(field_name): attr if attr is not None else ''})
             else:
@@ -216,12 +212,20 @@ def home(request):
                         'part_manufacturer_part_number'): part_rev.part.primary_manufacturer_part.manufacturer_part_number if part_rev.part.primary_manufacturer_part is not None else '',
                 }
                 for field_name in csv_headers.get_default_all():
-                    if field_name not in csv_headers.get_defaults_list(
-                        ['part_number', 'part_synopsis', 'part_revision', 'part_manufacturer',
-                         'part_manufacturer_part_number', ]):
+                    if field_name not in csv_headers.get_defaults_list(['part_number', 'part_synopsis', 'part_revision', 'part_manufacturer', 'part_manufacturer_part_number', ]
+                                                                       + seller_csv_headers.get_default_all()):
                         attr = getattr(part_rev, field_name)
                         row.update({csv_headers.get_default(field_name): attr if attr is not None else ''})
-            writer.writerow({k: smart_str(v) for k, v in row.items()})
+
+            sellerparts = part_rev.part.seller_parts()
+            if len(sellerparts) > 0:
+                for sellerpart in part_rev.part.seller_parts():
+                    for field_name in seller_csv_headers.get_default_all():
+                        attr = getattr(sellerpart, field_name)
+                        row.update({csv_headers.get_default(field_name): attr if attr is not None else ''})
+                    writer.writerow({k: smart_str(v) for k, v in row.items()})
+            else:
+                writer.writerow({k: smart_str(v) for k, v in row.items()})
         return response
 
     paginator = Paginator(part_revs, 50)
